@@ -27,11 +27,11 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/sign-up': (context) => const SignUpScreen(),
-        '/dashboard': (context) => const Dashboard(email: '', name: '',),
+        '/dashboard': (context) => const Dashboard(),
         '/employee-management': (context) => const EmployeeManagement(),
         '/attendance-manager': (context) => const AttendanceManager(),
         '/payroll-report': (context) => const PayrollReport(),
-        '/profile': (context) => const ProfilePage(email: '', name: '',),
+        '/profile': (context) => const ProfilePage(),
       },
     );
   }
