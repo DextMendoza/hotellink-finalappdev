@@ -5,6 +5,8 @@ class Employee {
   String email;
   double salary;
 
+  static List<Employee> allEmployees = [];
+
   Employee({
     required this.id,
     required this.employeeId,
