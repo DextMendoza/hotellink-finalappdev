@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:final_project_in_appdev/models/employee.dart';
-
+import 'package:final_project_in_appdev/utils/constants.dart';
 class EmployeeManagement extends StatefulWidget {
   const EmployeeManagement({super.key});
 
@@ -14,7 +14,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _salaryController = TextEditingController();
-  List<Employee> _employees = [];
+  final List<Employee> _employees = [];
 
   @override
   void dispose() {
@@ -93,11 +93,14 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Please enter email';
-                      }
-                      return null;
-                    },
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email';
+                }
+                  if (!Constants.emailRegex.hasMatch(value)) {
+                    return 'Please enter a valid email address';
+               }
+               return null;
+              },
                   ),
                   const SizedBox(height: 10),
                   TextFormField(
