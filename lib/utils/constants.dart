@@ -4,8 +4,9 @@ class Constants {
   // Colors
   static const Color primaryColor = Colors.blue;
   static const Color secondaryColor = Colors.grey;
-  static const Color backgroundColor = Colors.grey[50];
-  static const Color textColor = Colors.grey[800];
+  static const Color backgroundColor = Color.fromARGB(243, 250, 250, 250);
+  static const Color textColor = Color.fromARGB(255, 66, 66, 66);
+  
 
   // Fonts
   static const String fontFamily = 'Roboto';
@@ -23,4 +24,9 @@ class Constants {
   static const String attendanceManagerRoute = '/attendance-manager';
   static const String payrollReportRoute = '/payroll-report';
   static const String profileRoute = '/profile';
+
+  //Variables
+  static final emailRegex = RegExp(
+    r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
+  );
 }
