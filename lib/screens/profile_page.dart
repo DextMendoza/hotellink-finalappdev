@@ -1,21 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:final_project_in_appdev/screens/login_screen.dart';
 
 class ProfilePage extends StatefulWidget {
-  final String email;
-  final String name;
+  const ProfilePage({super.key});
 
-  const ProfilePage({
-    super.key,
-    required this.email,
-    required this.name,
-  });
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final _secureStorage = const FlutterSecureStorage();
+  String _name = '';
+  String _email = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
+    final name = await _secureStorage.read(key: 'name');
+    final email = await _secureStorage.read(key: 'email');
+
+    setState(() {
+      _name = name ?? 'Unknown';
+      _email = email ?? 'Unknown';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,22 +47,21 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Name: ${widget.name}',
+              'Name: $_name',
               style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 10),
             Text(
-              'Email: ${widget.email}',
+              'Email: $_email',
               style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
+                Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const LoginScreen(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (route) => false,
                 );
               },
               child: const Text('Logout'),
