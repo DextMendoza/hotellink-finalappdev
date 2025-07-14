@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:final_project_in_appdev/screens/dashboard.dart';
+import 'package:final_project_in_appdev/utils/constants.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -35,7 +36,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 validator: (value) {
                   if (value!.isEmpty) {
-                    return 'Please enter your name';
+                    return 'Please enter your email';
                   }
                   return null;
                 },
@@ -48,11 +49,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
-                  if (value!.isEmpty) {
+                  if (value == null || value.isEmpty) {
                     return 'Please enter your email';
-                  }
-                  return null;
-                },
+                }
+                  if (!Constants.emailRegex.hasMatch(value)) {
+                    return 'Please enter a valid email address';
+               }
+               return null;
+              },
               ),
               const SizedBox(height: 20),
               TextFormField(
