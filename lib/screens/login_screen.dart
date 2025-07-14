@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:final_project_in_appdev/screens/dashboard.dart';
 import 'package:final_project_in_appdev/screens/sign_up_screen.dart';
-
+import 'package:final_project_in_appdev/utils/constants.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -15,13 +15,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoading = false;
+  final bool _isLoading = false;  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Login'),
+        title: const Text('HotelLink: Admin Login'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -36,11 +36,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
-                  if (value!.isEmpty) {
+                  if (value == null || value.isEmpty) {
                     return 'Please enter your email';
-                  }
-                  return null;
-                },
+                }
+                  if (!Constants.emailRegex.hasMatch(value)) {
+                    return 'Please enter a valid email address';
+               }
+               return null;
+              },
               ),
               const SizedBox(height: 20),
               TextFormField(
@@ -66,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const Dashboard(),
+                              builder: (context) => const Dashboard(email: '', name: '',),
                             ),
                           );
                         }
