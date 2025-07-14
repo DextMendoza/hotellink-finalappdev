@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:final_project_in_appdev/models/employee.dart';
-import 'package:final_project_in_appdev/utils/constants.dart';
+import 'package:final_project_in_appdev/screens/employee_screen.dart';
+
 class EmployeeManagement extends StatefulWidget {
   const EmployeeManagement({super.key});
 
@@ -14,7 +15,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _salaryController = TextEditingController();
-  final List<Employee> _employees = [];
+  List<Employee> _employees = [];
 
   @override
   void dispose() {
@@ -36,6 +37,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
       );
       setState(() {
         _employees.add(employee);
+        Employee.allEmployees.add(employee);
       });
       _employeeIdController.clear();
       _nameController.clear();
@@ -47,9 +49,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Employee Management'),
-      ),
+      appBar: AppBar(title: const Text('Employee Management')),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -93,14 +93,11 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                }
-                  if (!Constants.emailRegex.hasMatch(value)) {
-                    return 'Please enter a valid email address';
-               }
-               return null;
-              },
+                      if (value!.isEmpty) {
+                        return 'Please enter email';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 10),
                   TextFormField(
@@ -117,9 +114,29 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                     },
                   ),
                   const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: _addEmployee,
-                    child: const Text('Add Employee'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _addEmployee,
+                          child: const Text('Add Employee'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const EmployeeScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text('View Employees'),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
