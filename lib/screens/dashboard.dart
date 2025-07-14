@@ -6,14 +6,7 @@ import 'package:final_project_in_appdev/screens/profile_page.dart';
 import 'package:final_project_in_appdev/screens/login_screen.dart';
 
 class Dashboard extends StatefulWidget {
-  final String email;
-  final String name;
-
-  const Dashboard({
-    super.key,
-    this.email = '',  // Make optional with default value
-    this.name = '',   // Make optional with default value
-  });
+  const Dashboard({super.key});
 
   @override
   State<Dashboard> createState() => _DashboardState();
@@ -32,10 +25,7 @@ class _DashboardState extends State<Dashboard> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ProfilePage(
-                    email: widget.email,
-                    name: widget.name,
-                  ),
+                  builder: (context) => const ProfilePage(),
                 ),
               );
             },
@@ -145,21 +135,6 @@ class NavigationDrawer extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const PayrollReport(),
-                ),
-              );
-            },
-          ),
-          ListTile(
-            title: const Text('Profile'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ProfilePage(
-                    email: 'admin@example.com',
-                    name: 'Admin User',
-                  ),
                 ),
               );
             },
