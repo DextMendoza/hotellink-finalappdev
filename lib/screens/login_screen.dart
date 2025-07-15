@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:final_project_in_appdev/screens/dashboard.dart';
 import 'package:final_project_in_appdev/screens/sign_up_screen.dart';
 import 'package:final_project_in_appdev/utils/constants.dart';
+import 'package:final_project_in_appdev/utils/account_storage.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,23 +16,45 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _secureStorage = const FlutterSecureStorage();
   bool _isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadSecureData();
-  }
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
 
-  Future<void> _loadSecureData() async {
-    _emailController.text = await _secureStorage.read(key: 'email') ?? '';
-    _passwordController.text = await _secureStorage.read(key: 'password') ?? '';
-  }
+      final isValid = await AccountStorage.verifyCredentials(
+        _emailController.text,
+        _passwordController.text,
+      );
 
-  Future<void> _saveSecureData() async {
-    await _secureStorage.write(key: 'email', value: _emailController.text);
-    await _secureStorage.write(key: 'password', value: _passwordController.text);
+      if (isValid) {
+        final user = await AccountStorage.getUserByEmail(_emailController.text);
+        if (user != null) {
+          await FlutterSecureStorage().write(key: 'current_user_email', value: user.email);
+          await FlutterSecureStorage().write(key: 'current_user_name', value: user.name);
+        }
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const Dashboard()),
+        );
+      } else {
+        setState(() => _isLoading = false);
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Login Failed'),
+            content: const Text('Invalid email or password.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -47,10 +70,10 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 60),
-                  const Icon(Icons.lock_outline, size: 80, color: Colors.white),
+                  const Icon(Icons.perm_identity, size: 80, color: Colors.white),
                   const SizedBox(height: 20),
                   Text(
-                    'Welcome Back!',
+                    'HotelLink: HRIS',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -95,21 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             minimumSize: const Size.fromHeight(50),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              setState(() => _isLoading = true);
-                              _saveSecureData();
-                              Future.delayed(const Duration(seconds: 1), () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const Dashboard(),
-                                  ),
-                                );
-                              });
-                            }
-                          },
+                          onPressed: _login,
                           child: const Text('Login'),
                         ),
                   const SizedBox(height: 20),
