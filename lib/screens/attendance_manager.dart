@@ -32,18 +32,22 @@ class _AttendanceManagerState extends State<AttendanceManager> {
     if (data != null) {
       final List<dynamic> decoded = json.decode(data);
       setState(() {
-        _attendanceRecords = decoded.map((e) => AttendanceRecord.fromJson(e)).toList();
+        _attendanceRecords = decoded
+            .map((e) => AttendanceRecord.fromJson(e))
+            .toList();
       });
     }
   }
 
   Future<void> _saveAttendance() async {
     final prefs = await SharedPreferences.getInstance();
-    final data = json.encode(_attendanceRecords.map((e) => e.toJson()).toList());
-    await prefs.setString('attendance_records', data);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Attendance list saved.')),
+    final data = json.encode(
+      _attendanceRecords.map((e) => e.toJson()).toList(),
     );
+    await prefs.setString('attendance_records', data);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Attendance list saved.')));
   }
 
   Future<void> _clearAttendance() async {
@@ -52,13 +56,31 @@ class _AttendanceManagerState extends State<AttendanceManager> {
     setState(() {
       _attendanceRecords.clear();
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Attendance list cleared.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Attendance list cleared.')));
   }
 
   void _addAttendance() {
     if (_formKey.currentState!.validate()) {
+      // Checking for duplicate attendance for the same employee and date
+      final alreadyExists = _attendanceRecords.any(
+        (record) =>
+            record.employeeId == _employeeIdController.text &&
+            record.date.split('T')[0] ==
+                _selectedDate.toIso8601String().split('T')[0],
+      );
+      if (alreadyExists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Attendance for this employee on this date already exists.',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
       final record = AttendanceRecord(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         employeeId: _employeeIdController.text,
@@ -132,7 +154,7 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                             TextButton(
                               onPressed: _pickDate,
                               child: const Text('Select Date'),
-                            )
+                            ),
                           ],
                         ),
                         const SizedBox(height: 10),
@@ -140,9 +162,13 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                           value: _attendanceStatus,
                           items: const [
                             DropdownMenuItem(
-                                value: 'Present', child: Text('Present')),
+                              value: 'Present',
+                              child: Text('Present'),
+                            ),
                             DropdownMenuItem(
-                                value: 'Absent', child: Text('Absent')),
+                              value: 'Absent',
+                              child: Text('Absent'),
+                            ),
                           ],
                           onChanged: (value) {
                             setState(() => _attendanceStatus = value!);
@@ -159,7 +185,7 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                         ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -172,10 +198,12 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                   return ListTile(
                     tileColor: const Color.fromARGB(179, 255, 255, 255),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     title: Text('Employee ID: ${record.employeeId}'),
                     subtitle: Text(
-                        'Date: ${record.date.split("T")[0]}, Status: ${record.status}'),
+                      'Date: ${record.date.split("T")[0]}, Status: ${record.status}',
+                    ),
                   );
                 },
               ),
@@ -197,8 +225,8 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => AttendanceListScreen(
-                            records: _attendanceRecords),
+                        builder: (context) =>
+                            AttendanceListScreen(records: _attendanceRecords),
                       ),
                     );
                   },
