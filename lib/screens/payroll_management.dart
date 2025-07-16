@@ -26,6 +26,19 @@ class _PayrollReportState extends State<PayrollReport> {
 
   void _addPayroll() {
     if (_formKey.currentState!.validate()) {
+      // Check if the same employee ID already exists in the payroll records
+      final exists = _payrollRecords.any(
+        (record) => record.employeeId == _employeeIdController.text,
+      );
+      if (exists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Payroll for this Employee ID already exists!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
       final payrollRecord = PayrollRecord(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         employeeId: _employeeIdController.text,
