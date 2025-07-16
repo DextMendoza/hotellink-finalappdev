@@ -1,3 +1,4 @@
+import 'package:final_project_in_appdev/screens/employee_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:final_project_in_appdev/screens/login_screen.dart';
 import 'package:final_project_in_appdev/screens/sign_up_screen.dart';
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Payroll Management',
+      title: 'HotelLink Mobile App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.grey[50],
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
         '/attendance-manager': (context) => const AttendanceManager(),
         '/payroll-report': (context) => const PayrollReport(),
         '/profile': (context) => const ProfilePage(),
+        '/employee-screen': (context) => EmployeeScreen(employees: []),
       },
     );
   }
@@ -64,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
             Text(
-              'Payroll Management',
+              'HotelLink Mobile App',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
