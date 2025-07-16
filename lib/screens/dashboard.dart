@@ -73,7 +73,7 @@ class _DashboardState extends State<Dashboard> {
                   ),
                   _AnimatedTile(
                     icon: Icons.receipt_long,
-                    label: 'Payroll Report',
+                    label: 'Payroll Management',
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const PayrollReport()),
