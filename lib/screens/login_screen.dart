@@ -70,7 +70,11 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 60),
-                  const Icon(Icons.perm_identity, size: 80, color: Colors.white),
+                  Image.asset(
+                    'assets/images/logo.png',
+                    width: 80,
+                    height: 80,
+                  ),
                   const SizedBox(height: 20),
                   Text(
                     'HotelLink: HRIS',
