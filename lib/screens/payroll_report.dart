@@ -43,9 +43,7 @@ class _PayrollReportState extends State<PayrollReport> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Payroll Report'),
-      ),
+      appBar: AppBar(title: const Text('Payroll Report')),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -110,9 +108,11 @@ class _PayrollReportState extends State<PayrollReport> {
                 itemBuilder: (context, index) {
                   return ListTile(
                     title: Text(
-                        'Employee ID: ${_payrollRecords[index].employeeId}'),
+                      'Employee ID: ${_payrollRecords[index].employeeId}',
+                    ),
                     subtitle: Text(
-                        'Month: ${_payrollRecords[index].month}, Salary: ${_payrollRecords[index].salary}'),
+                      'Month: ${_payrollRecords[index].month}, Salary: ₱${_payrollRecords[index].salary}',
+                    ),
                   );
                 },
               ),
