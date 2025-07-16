@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:final_project_in_appdev/screens/employee_management.dart';
 import 'package:final_project_in_appdev/screens/attendance_manager.dart';
-import 'package:final_project_in_appdev/screens/payroll_report.dart';
+import 'package:final_project_in_appdev/screens/payroll_management.dart';
 import 'package:final_project_in_appdev/screens/profile_page.dart';
 import 'package:final_project_in_appdev/screens/login_screen.dart';
 import 'package:final_project_in_appdev/utils/constants.dart';
