@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:final_project_in_appdev/models/payroll_record.dart';
+import 'package:final_project_in_appdev/screens/payroll_screen.dart';
 
 class PayrollReport extends StatefulWidget {
   const PayrollReport({super.key});
@@ -94,9 +95,31 @@ class _PayrollReportState extends State<PayrollReport> {
                     },
                   ),
                   const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: _addPayroll,
-                    child: const Text('Add Payroll'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _addPayroll,
+                          child: const Text('Add Payroll'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ViewPayrollScreen(
+                                  payrollRecords: _payrollRecords,
+                                ),
+                              ),
+                            );
+                          },
+                          child: const Text('View Report'),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
