@@ -8,7 +8,7 @@ class Constants {
   static const Color textColor = Color.fromARGB(255, 66, 66, 66);
 
   // Fonts
-  static const String fontFamily = 'Roboto';
+  static const String fontFamily = 'Ubuntu';
   static const double fontSizeTitle = 24;
   static const double fontSizeSubtitle = 18;
 
@@ -26,17 +26,15 @@ class Constants {
 
   //Additional Constants
   static final emailRegex = RegExp(
-    r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
+    r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
   );
-  static const backgroundGradient = LinearGradient( //constant for gradient background
+  static const backgroundGradient = LinearGradient(
+    //constant for gradient background
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
       Color.fromARGB(255, 53, 155, 202),
-      Color.fromARGB(255, 49, 118, 150), 
+      Color.fromARGB(255, 49, 118, 150),
     ],
   );
-  
-
-
 }
