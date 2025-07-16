@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:final_project_in_appdev/screens/dashboard.dart';
+import 'package:final_project_in_appdev/screens/login_screen.dart';
 import 'package:final_project_in_appdev/utils/constants.dart';
 import 'package:final_project_in_appdev/utils/account_storage.dart';
 
@@ -32,11 +33,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _saveSecureData() async {
+    final existingUser = await AccountStorage.getUserByEmail(_emailController.text);
+    if (existingUser != null) {
+      setState(() => _isLoading = false);
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Account Exists'),
+          content: const Text('An account with this email already exists.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     await _secureStorage.write(key: 'name', value: _nameController.text);
     await _secureStorage.write(key: 'email', value: _emailController.text);
     await _secureStorage.write(key: 'password', value: _passwordController.text);
 
-    // Store current user info for profile page
     await _secureStorage.write(key: 'current_user_name', value: _nameController.text);
     await _secureStorage.write(key: 'current_user_email', value: _emailController.text);
 
@@ -45,6 +64,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
       _emailController.text,
       _passwordController.text,
     );
+
+    Future.delayed(const Duration(seconds: 1), () {
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const Dashboard(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.easeInOut;
+
+            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        ),
+      );
+    });
   }
 
   @override
@@ -61,7 +101,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
               key: _formKey,
               child: Column(
                 children: [
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 40),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ),
                   const Icon(
                     Icons.person_add_alt_1,
                     size: 80,
@@ -152,26 +201,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               if (_formKey.currentState!.validate()) {
                                 setState(() => _isLoading = true);
                                 _saveSecureData();
-                                Future.delayed(const Duration(seconds: 1), () {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    PageRouteBuilder(
-                                      pageBuilder: (context, animation, secondaryAnimation) => const Dashboard(),
-                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                        const begin = Offset(1.0, 0.0);
-                                        const end = Offset.zero;
-                                        const curve = Curves.easeInOut;
-
-                                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-                                        return SlideTransition(
-                                          position: animation.drive(tween),
-                                          child: child,
-                                        );
-                                      },
-                                    ),
-                                  );
-                                });
                               }
                             },
                             child: const Text('Sign Up'),
