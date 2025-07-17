@@ -4,6 +4,8 @@ import 'package:final_project_in_appdev/screens/dashboard.dart';
 import 'package:final_project_in_appdev/screens/login_screen.dart';
 import 'package:final_project_in_appdev/utils/constants.dart';
 import 'package:final_project_in_appdev/utils/account_storage.dart';
+import 'package:final_project_in_appdev/screens/otp_verification.dart';
+import 'package:final_project_in_appdev/models/otp_service.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -32,7 +34,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _passwordController.text = await _secureStorage.read(key: 'password') ?? '';
   }
 
-  Future<void> _saveSecureData() async {
+  Future<void> _submitWithOtp() async {
+    setState(() => _isLoading = true);
+
     final existingUser = await AccountStorage.getUserByEmail(_emailController.text);
     if (existingUser != null) {
       setState(() => _isLoading = false);
@@ -52,6 +56,40 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
+    final otp = await OtpService.sendOtp(_emailController.text);
+
+    setState(() => _isLoading = false);
+
+    if (otp == null) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Failed to send OTP'),
+          content: const Text('Please try again later.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => OtpVerificationScreen(
+          email: _emailController.text,
+          correctOtp: otp,
+          onVerified: _saveSecureData,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveSecureData() async {
     await _secureStorage.write(key: 'name', value: _nameController.text);
     await _secureStorage.write(key: 'email', value: _emailController.text);
     await _secureStorage.write(key: 'password', value: _passwordController.text);
@@ -65,24 +103,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
       _passwordController.text,
     );
 
-    Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       Navigator.pushReplacement(
         context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const Dashboard(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.easeInOut;
-
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
-        ),
+        MaterialPageRoute(builder: (_) => const Dashboard()),
       );
     });
   }
@@ -136,12 +160,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       filled: true,
                       fillColor: Colors.white,
                     ),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Please enter your name';
-                      }
-                      return null;
-                    },
+                    validator: (value) => value!.isEmpty ? 'Please enter your name' : null,
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
@@ -178,12 +197,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       filled: true,
                       fillColor: Colors.white,
                     ),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      return null;
-                    },
+                    validator: (value) => value!.isEmpty ? 'Please enter your password' : null,
                   ),
                   const SizedBox(height: 30),
                   _isLoading
@@ -199,8 +213,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ),
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
-                                setState(() => _isLoading = true);
-                                _saveSecureData();
+                                _submitWithOtp();
                               }
                             },
                             child: const Text('Sign Up'),
