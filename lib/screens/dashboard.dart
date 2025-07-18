@@ -1,3 +1,4 @@
+// Enhanced Dashboard with icon transitions in drawer
 import 'package:flutter/material.dart';
 import 'package:final_project_in_appdev/screens/employee_management.dart';
 import 'package:final_project_in_appdev/screens/attendance_manager.dart';
@@ -182,63 +183,143 @@ class NavigationDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
+      child: Column(
         children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(
+          DrawerHeader(
+            decoration: const BoxDecoration(
               color: Constants.primaryColor,
+              image: DecorationImage(
+                image: AssetImage('assets/images/drawer_bg.png'),
+                fit: BoxFit.cover,
+              ),
             ),
-            child: Text(
-              'Payroll Management',
-              style: TextStyle(color: Colors.white, fontSize: 20),
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: Row(
+                children: const [
+                  Icon(Icons.lock_clock, color: Colors.white, size: 28),
+                  SizedBox(width: 10),
+                  Text(
+                    'Payroll Management',
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  ),
+                ],
+              ),
             ),
           ),
-          ListTile(
-            title: const Text('Dashboard'),
-            onTap: () => Navigator.pop(context),
-          ),
-          ListTile(
-            title: const Text('Employee Management'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const EmployeeManagement()),
-              );
-            },
-          ),
-          ListTile(
-            title: const Text('Attendance Manager'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AttendanceManager()),
-              );
-            },
-          ),
-          ListTile(
-            title: const Text('Payroll Report'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const PayrollReport()),
-              );
-            },
-          ),
-          ListTile(
-            title: const Text('Logout'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-              );
-            },
-          ),
+          Expanded(
+            child: ListView(
+              children: [
+                _AnimatedDrawerTile(
+                  icon: Icons.dashboard,
+                  label: 'Dashboard',
+                  onTap: () => Navigator.pop(context),
+                ),
+                _AnimatedDrawerTile(
+                  icon: Icons.people,
+                  label: 'Employee Management',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const EmployeeManagement()),
+                    );
+                  },
+                ),
+                _AnimatedDrawerTile(
+                  icon: Icons.access_time,
+                  label: 'Attendance Manager',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AttendanceManager()),
+                    );
+                  },
+                ),
+                _AnimatedDrawerTile(
+                  icon: Icons.receipt_long,
+                  label: 'Payroll Report',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PayrollReport()),
+                    );
+                  },
+                ),
+                _AnimatedDrawerTile(
+                  icon: Icons.logout,
+                  label: 'Logout',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    );
+                  },
+                ),
+              ],
+            ),
+          )
         ],
+      ),
+    );
+  }
+}
+
+class _AnimatedDrawerTile extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _AnimatedDrawerTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  State<_AnimatedDrawerTile> createState() => _AnimatedDrawerTileState();
+}
+
+class _AnimatedDrawerTileState extends State<_AnimatedDrawerTile> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(-1, 0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(_controller);
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: ListTile(
+          leading: Icon(widget.icon, color: Constants.primaryColor),
+          title: Text(widget.label),
+          onTap: widget.onTap,
+        ),
       ),
     );
   }
