@@ -32,11 +32,13 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
     _loadEmployees();
   }
 
+  // Loads employees from storage.
   Future<void> _loadEmployees() async {
     final loadedEmployees = await EmployeeStorage.loadEmployees();
     setState(() => _employees = loadedEmployees);
   }
 
+  // Clears the employee form.
   void _clearForm() {
     _employeeIdController.clear();
     _nameController.clear();
@@ -45,6 +47,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
     _editingIndex = null;
   }
 
+  // Saves a new or edited employee.
   Future<void> _saveEmployee() async {
     if (_formKey.currentState!.validate()) {
       final employee = Employee(
@@ -70,11 +73,13 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
     }
   }
 
+  // Deletes an employee at the given index.
   Future<void> _deleteEmployee(int index) async {
     setState(() => _employees.removeAt(index));
     await EmployeeStorage.saveEmployees(_employees);
   }
 
+  // Populates the form with the selected employee's data for editing.
   void _populateForm(Employee emp, int index) {
     _employeeIdController.text = emp.employeeId;
     _nameController.text = emp.name;
@@ -83,17 +88,18 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
     _editingIndex = index;
   }
 
+  // Exports employees to XML.
   Future<void> _exportToXml() async {
     try {
       final path = await XmlHelper.exportEmployeesToXml(_employees);
       setState(() => _lastExportPath = path);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Exported to XML: $path')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Exported to XML: $path')));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Export failed: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Export failed: $e')));
     }
   }
 
@@ -124,6 +130,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
+            // Employee input
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -134,6 +141,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                 key: _formKey,
                 child: Column(
                   children: [
+                    // Employee ID input
                     TextFormField(
                       controller: _employeeIdController,
                       decoration: const InputDecoration(
@@ -144,6 +152,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                           value!.isEmpty ? 'Please enter employee ID' : null,
                     ),
                     const SizedBox(height: 10),
+                    // Name input
                     TextFormField(
                       controller: _nameController,
                       decoration: const InputDecoration(
@@ -154,6 +163,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                           value!.isEmpty ? 'Please enter name' : null,
                     ),
                     const SizedBox(height: 10),
+                    // Email input
                     TextFormField(
                       controller: _emailController,
                       decoration: const InputDecoration(
@@ -171,6 +181,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                       },
                     ),
                     const SizedBox(height: 10),
+                    // Salary input
                     TextFormField(
                       controller: _salaryController,
                       decoration: const InputDecoration(
@@ -182,14 +193,17 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                           value!.isEmpty ? 'Please enter salary' : null,
                     ),
                     const SizedBox(height: 10),
+                    // Add/Update and View Employees buttons
                     Row(
                       children: [
                         Expanded(
                           child: ElevatedButton(
                             onPressed: _saveEmployee,
-                            child: Text(_editingIndex == null
-                                ? 'Add Employee'
-                                : 'Update Employee'),
+                            child: Text(
+                              _editingIndex == null
+                                  ? 'Add Employee'
+                                  : 'Update Employee',
+                            ),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -214,6 +228,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
               ),
             ),
             const SizedBox(height: 20),
+            // Employee list
             Expanded(
               child: ListView.builder(
                 itemCount: _employees.length,
@@ -222,8 +237,9 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                   return Card(
                     child: ListTile(
                       title: Text(emp.name),
-                      subtitle:
-                          Text('ID: ${emp.employeeId} | Email: ${emp.email}'),
+                      subtitle: Text(
+                        'ID: ${emp.employeeId} | Email: ${emp.email}',
+                      ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
