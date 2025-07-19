@@ -13,11 +13,13 @@ void main() async {
   runApp(const MyApp());
 }
 
+// Main app widget
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Set up MaterialApp with routes and theme
     return MaterialApp(
       title: 'HotelLink Mobile App',
       theme: ThemeData(
@@ -39,6 +41,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// Splash screen shown at app start
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -50,6 +53,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    // Wait 3 seconds then go to login screen
     Future.delayed(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
@@ -60,6 +64,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Simple splash UI with app name and loading spinner
     return Scaffold(
       body: Center(
         child: Column(
