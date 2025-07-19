@@ -22,6 +22,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _secureStorage = const FlutterSecureStorage();
   bool _isLoading = false;
 
+  // Load saved data if any
   @override
   void initState() {
     super.initState();
@@ -37,7 +38,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _submitWithOtp() async {
     setState(() => _isLoading = true);
 
-    final existingUser = await AccountStorage.getUserByEmail(_emailController.text);
+    // Check if email already exists
+    final existingUser = await AccountStorage.getUserByEmail(
+      _emailController.text,
+    );
     if (existingUser != null) {
       setState(() => _isLoading = false);
       showDialog(
@@ -92,10 +96,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _saveSecureData() async {
     await _secureStorage.write(key: 'name', value: _nameController.text);
     await _secureStorage.write(key: 'email', value: _emailController.text);
-    await _secureStorage.write(key: 'password', value: _passwordController.text);
+    await _secureStorage.write(
+      key: 'password',
+      value: _passwordController.text,
+    );
 
-    await _secureStorage.write(key: 'current_user_name', value: _nameController.text);
-    await _secureStorage.write(key: 'current_user_email', value: _emailController.text);
+    await _secureStorage.write(
+      key: 'current_user_name',
+      value: _nameController.text,
+    );
+    await _secureStorage.write(
+      key: 'current_user_email',
+      value: _emailController.text,
+    );
 
     await AccountStorage.saveAccount(
       _nameController.text,
@@ -113,11 +126,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Sign up screen UI
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: Constants.backgroundGradient,
-        ),
+        decoration: const BoxDecoration(gradient: Constants.backgroundGradient),
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -144,11 +156,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Text(
                     'Create Admin Account',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 30),
+                  // Name input
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
@@ -160,9 +173,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       filled: true,
                       fillColor: Colors.white,
                     ),
-                    validator: (value) => value!.isEmpty ? 'Please enter your name' : null,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Please enter your name' : null,
                   ),
                   const SizedBox(height: 20),
+                  // Email input
                   TextFormField(
                     controller: _emailController,
                     decoration: InputDecoration(
@@ -185,6 +200,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     },
                   ),
                   const SizedBox(height: 20),
+                  // Password input
                   TextFormField(
                     controller: _passwordController,
                     obscureText: true,
@@ -197,9 +213,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       filled: true,
                       fillColor: Colors.white,
                     ),
-                    validator: (value) => value!.isEmpty ? 'Please enter your password' : null,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Please enter your password' : null,
                   ),
                   const SizedBox(height: 30),
+                  // Sign Up button or loading indicator
                   _isLoading
                       ? const CircularProgressIndicator()
                       : SizedBox(
