@@ -12,11 +12,18 @@ class ViewPayrollScreen extends StatefulWidget {
 }
 
 class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
+  // Edit a payroll record at the given index
   void _editRecord(BuildContext context, int index) {
     final record = widget.payrollRecords[index];
-    final TextEditingController employeeIdController = TextEditingController(text: record.employeeId);
-    final TextEditingController monthController = TextEditingController(text: record.month);
-    final TextEditingController salaryController = TextEditingController(text: record.salary.toString());
+    final TextEditingController employeeIdController = TextEditingController(
+      text: record.employeeId,
+    );
+    final TextEditingController monthController = TextEditingController(
+      text: record.month,
+    );
+    final TextEditingController salaryController = TextEditingController(
+      text: record.salary.toString(),
+    );
 
     showDialog(
       context: context,
@@ -25,14 +32,17 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Employee ID input
             TextField(
               controller: employeeIdController,
               decoration: const InputDecoration(labelText: 'Employee ID'),
             ),
+            // Month input
             TextField(
               controller: monthController,
               decoration: const InputDecoration(labelText: 'Month (YYYY-MM)'),
             ),
+            // Salary input
             TextField(
               controller: salaryController,
               keyboardType: TextInputType.number,
@@ -52,7 +62,8 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
                   id: record.id,
                   employeeId: employeeIdController.text,
                   month: monthController.text,
-                  salary: double.tryParse(salaryController.text) ?? record.salary,
+                  salary:
+                      double.tryParse(salaryController.text) ?? record.salary,
                 );
               });
               Navigator.pop(context);
@@ -64,6 +75,7 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
     );
   }
 
+  // Delete a payroll record at the given index
   void _deleteRecord(int index) {
     setState(() {
       widget.payrollRecords.removeAt(index);
@@ -72,6 +84,7 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Payroll report view UI
     return Scaffold(
       appBar: AppBar(title: const Text('Payroll Report View')),
       body: Container(
@@ -83,17 +96,24 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
                 itemBuilder: (context, index) {
                   final record = widget.payrollRecords[index];
                   return Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: ListTile(
                       title: Text('Employee ID: ${record.employeeId}'),
-                      subtitle: Text('Month: ${record.month}\nSalary: ₱${record.salary}'),
+                      subtitle: Text(
+                        'Month: ${record.month}\nSalary: ₱${record.salary}',
+                      ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          // Edit button
                           IconButton(
                             icon: const Icon(Icons.edit),
                             onPressed: () => _editRecord(context, index),
                           ),
+                          // Delete button
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
                             onPressed: () => _deleteRecord(index),
