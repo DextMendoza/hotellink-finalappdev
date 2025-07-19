@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:final_project_in_appdev/models/payroll_record.dart';
 import 'package:final_project_in_appdev/screens/payroll_screen.dart';
 import 'package:final_project_in_appdev/utils/constants.dart';
+import 'package:final_project_in_appdev/utils/xml_helper.dart';
 
 class PayrollReport extends StatefulWidget {
   const PayrollReport({super.key});
@@ -72,14 +72,17 @@ class _PayrollReportState extends State<PayrollReport> {
     }
   }
 
-  Future<void> _saveToFile() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final file = File('${dir.path}/payroll_records.json');
-    final jsonData = jsonEncode(_payrollRecords.map((e) => e.toJson()).toList());
-    await file.writeAsString(jsonData);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Payroll saved to file!')),
-    );
+  Future<void> _exportToXmlFile() async {
+    try {
+      final filePath = await XmlHelper.exportPayrollToXml(_payrollRecords);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Payroll exported successfully to $filePath!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to export payroll: $e')),
+      );
+    }
   }
 
   void _clearRecords() {
@@ -186,9 +189,9 @@ class _PayrollReportState extends State<PayrollReport> {
                     children: [
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: _saveToFile,
+                          onPressed: _exportToXmlFile,
                           style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                          child: const Text('Save to File'),
+                          child: const Text('Export to XML'),
                         ),
                       ),
                       const SizedBox(width: 10),
