@@ -28,6 +28,7 @@ class _PayrollReportState extends State<PayrollReport> {
     super.dispose();
   }
 
+  // Show month picker dialog
   Future<void> _pickMonth(BuildContext context) async {
     final now = DateTime.now();
     final picked = await showDatePicker(
@@ -43,6 +44,7 @@ class _PayrollReportState extends State<PayrollReport> {
     }
   }
 
+  // Add payroll record if not duplicate
   void _addPayroll() {
     if (_formKey.currentState!.validate() && _selectedMonth != null) {
       final exists = _payrollRecords.any(
@@ -60,7 +62,8 @@ class _PayrollReportState extends State<PayrollReport> {
       final payrollRecord = PayrollRecord(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         employeeId: _employeeIdController.text,
-        month: '${_selectedMonth!.year}-${_selectedMonth!.month.toString().padLeft(2, '0')}',
+        month:
+            '${_selectedMonth!.year}-${_selectedMonth!.month.toString().padLeft(2, '0')}',
         salary: double.parse(_salaryController.text),
       );
       setState(() {
@@ -72,6 +75,7 @@ class _PayrollReportState extends State<PayrollReport> {
     }
   }
 
+  // Export payroll records to XML file
   Future<void> _exportToXmlFile() async {
     try {
       final filePath = await XmlHelper.exportPayrollToXml(_payrollRecords);
@@ -79,12 +83,13 @@ class _PayrollReportState extends State<PayrollReport> {
         SnackBar(content: Text('Payroll exported successfully to $filePath!')),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to export payroll: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to export payroll: $e')));
     }
   }
 
+  // Clear all payroll records
   void _clearRecords() {
     setState(() => _payrollRecords.clear());
     ScaffoldMessenger.of(context).showSnackBar(
@@ -94,6 +99,7 @@ class _PayrollReportState extends State<PayrollReport> {
 
   @override
   Widget build(BuildContext context) {
+    // Main payroll management UI
     return Scaffold(
       appBar: AppBar(title: const Text('Payroll Report')),
       body: Container(
@@ -105,6 +111,7 @@ class _PayrollReportState extends State<PayrollReport> {
               key: _formKey,
               child: Column(
                 children: [
+                  // Employee ID input
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white70,
@@ -117,15 +124,20 @@ class _PayrollReportState extends State<PayrollReport> {
                         border: OutlineInputBorder(borderSide: BorderSide.none),
                         contentPadding: EdgeInsets.all(12),
                       ),
-                      validator: (value) => value!.isEmpty ? 'Enter employee ID' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Enter employee ID' : null,
                     ),
                   ),
                   const SizedBox(height: 10),
+                  // Month picker
                   GestureDetector(
                     onTap: () => _pickMonth(context),
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white70,
                         borderRadius: BorderRadius.circular(12),
@@ -133,13 +145,14 @@ class _PayrollReportState extends State<PayrollReport> {
                       ),
                       child: Text(
                         _selectedMonth == null
-                          ? 'Select Month'
-                          : '${_selectedMonth!.year}-${_selectedMonth!.month.toString().padLeft(2, '0')}',
+                            ? 'Select Month'
+                            : '${_selectedMonth!.year}-${_selectedMonth!.month.toString().padLeft(2, '0')}',
                         style: const TextStyle(fontSize: 16),
                       ),
                     ),
                   ),
                   const SizedBox(height: 10),
+                  // Salary input
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white70,
@@ -154,10 +167,12 @@ class _PayrollReportState extends State<PayrollReport> {
                         border: OutlineInputBorder(borderSide: BorderSide.none),
                         contentPadding: EdgeInsets.all(12),
                       ),
-                      validator: (value) => value!.isEmpty ? 'Enter salary' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Enter salary' : null,
                     ),
                   ),
                   const SizedBox(height: 10),
+                  // Add Payroll and View Report buttons
                   Row(
                     children: [
                       Expanded(
@@ -185,12 +200,15 @@ class _PayrollReportState extends State<PayrollReport> {
                     ],
                   ),
                   const SizedBox(height: 10),
+                  // Export and Clear buttons
                   Row(
                     children: [
                       Expanded(
                         child: ElevatedButton(
                           onPressed: _exportToXmlFile,
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                          ),
                           child: const Text('Export to XML'),
                         ),
                       ),
@@ -198,23 +216,30 @@ class _PayrollReportState extends State<PayrollReport> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: _clearRecords,
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
                           child: const Text('Clear Today\'s List'),
                         ),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
+            // Payroll records list
             Expanded(
               child: ListView.builder(
                 itemCount: _payrollRecords.length,
                 itemBuilder: (context, index) {
                   return ListTile(
-                    title: Text('Employee ID: ${_payrollRecords[index].employeeId}'),
-                    subtitle: Text('Month: ${_payrollRecords[index].month}, Salary: ₱${_payrollRecords[index].salary}'),
+                    title: Text(
+                      'Employee ID: ${_payrollRecords[index].employeeId}',
+                    ),
+                    subtitle: Text(
+                      'Month: ${_payrollRecords[index].month}, Salary: ₱${_payrollRecords[index].salary}',
+                    ),
                   );
                 },
               ),
