@@ -15,12 +15,14 @@ class _ProfilePageState extends State<ProfilePage> {
   String _name = 'Loading...';
   String _email = 'Loading...';
 
+  // Load user profile data on start
   @override
   void initState() {
     super.initState();
     _loadProfileData();
   }
 
+  // Load name and email from secure storage
   Future<void> _loadProfileData() async {
     final name = await _secureStorage.read(key: 'current_user_name');
     final email = await _secureStorage.read(key: 'current_user_email');
@@ -33,6 +35,7 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  // Logout and clear secure storage
   Future<void> _logout() async {
     await _secureStorage.deleteAll();
     if (context.mounted) {
@@ -46,22 +49,24 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Profile page UI
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
       body: Container(
         decoration: const BoxDecoration(gradient: Constants.backgroundGradient),
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 40.0,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset(
-                    'assets/images/logo.png',
-                    width: 80,
-                    height: 80,
-                  ),
+                // App logo
+                Image.asset('assets/images/logo.png', width: 80, height: 80),
                 const SizedBox(height: 20),
+                // Profile info card
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -71,23 +76,36 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Name: $_name', style: const TextStyle(fontSize: 18)),
+                      Text(
+                        'Name: $_name',
+                        style: const TextStyle(fontSize: 18),
+                      ),
                       const SizedBox(height: 10),
-                      Text('Email: $_email', style: const TextStyle(fontSize: 18)),
+                      Text(
+                        'Email: $_email',
+                        style: const TextStyle(fontSize: 18),
+                      ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 30),
+                // Logout button
                 ElevatedButton(
                   onPressed: _logout,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 16,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Logout', style: TextStyle(color: Colors.white)),
+                  child: const Text(
+                    'Logout',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ],
             ),
