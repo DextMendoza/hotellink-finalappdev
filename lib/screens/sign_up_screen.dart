@@ -22,11 +22,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _secureStorage = const FlutterSecureStorage();
   bool _isLoading = false;
 
-  // Load saved data if any
   @override
   void initState() {
     super.initState();
-    _loadSecureData();
+    _loadSecureData(); // Load saved data if any
   }
 
   Future<void> _loadSecureData() async {
@@ -35,6 +34,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _passwordController.text = await _secureStorage.read(key: 'password') ?? '';
   }
 
+  // Handles sign up with OTP verification
   Future<void> _submitWithOtp() async {
     setState(() => _isLoading = true);
 
@@ -60,6 +60,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
+    // Send OTP to email
     final otp = await OtpService.sendOtp(_emailController.text);
 
     setState(() => _isLoading = false);
@@ -81,6 +82,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
+    // Go to OTP verification screen
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -93,6 +95,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
+  // Save user data securely after successful OTP verification
   Future<void> _saveSecureData() async {
     await _secureStorage.write(key: 'name', value: _nameController.text);
     await _secureStorage.write(key: 'email', value: _emailController.text);
