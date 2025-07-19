@@ -1,9 +1,11 @@
+// Model class representing a payroll record for an employee.
 class PayrollRecord {
   String id;
   String employeeId;
   String month;
   double salary;
 
+  // Constructor for creating a PayrollRecord instance.
   PayrollRecord({
     required this.id,
     required this.employeeId,
@@ -11,6 +13,7 @@ class PayrollRecord {
     required this.salary,
   });
 
+  // Converts the PayrollRecord object to a JSON-compatible map.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -20,6 +23,7 @@ class PayrollRecord {
     };
   }
 
+  // Factory constructor to create a PayrollRecord from a JSON map.
   factory PayrollRecord.fromJson(Map<String, dynamic> json) {
     return PayrollRecord(
       id: json['id'],
