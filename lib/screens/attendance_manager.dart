@@ -8,8 +8,7 @@ import 'package:final_project_in_appdev/utils/file_exporter.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
-
-
+// Main widget for managing attendance
 class AttendanceManager extends StatefulWidget {
   const AttendanceManager({super.key});
 
@@ -26,32 +25,36 @@ class _AttendanceManagerState extends State<AttendanceManager> {
 
   List<AttendanceRecord> _attendanceRecords = [];
 
+  // Load saved attendance on start
   @override
   void initState() {
     super.initState();
     _loadAttendance();
   }
 
+  // Loads attendance records from SharedPreferences
   Future<void> _loadAttendance() async {
-  final prefs = await SharedPreferences.getInstance();
-  final xmlData = prefs.getString('attendance_records');
-  if (xmlData != null) {
-    final records = XmlHelper.fromXml(xmlData);
-    setState(() {
-      _attendanceRecords = records;
-    });
+    final prefs = await SharedPreferences.getInstance();
+    final xmlData = prefs.getString('attendance_records');
+    if (xmlData != null) {
+      final records = XmlHelper.fromXml(xmlData);
+      setState(() {
+        _attendanceRecords = records;
+      });
+    }
   }
-}
 
+  // Saves attendance records to SharedPreferences as XML
   Future<void> _saveAttendance() async {
-  final prefs = await SharedPreferences.getInstance();
-  final xmlData = XmlHelper.toXml(_attendanceRecords);
-  await prefs.setString('attendance_records', xmlData);
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('Attendance list saved as XML.')),
-  );
-}
+    final prefs = await SharedPreferences.getInstance();
+    final xmlData = XmlHelper.toXml(_attendanceRecords);
+    await prefs.setString('attendance_records', xmlData);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Attendance list saved as XML.')),
+    );
+  }
 
+  // Clears all attendance records
   Future<void> _clearAttendance() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('attendance_records');
@@ -63,6 +66,7 @@ class _AttendanceManagerState extends State<AttendanceManager> {
     ).showSnackBar(const SnackBar(content: Text('Attendance list cleared.')));
   }
 
+  // Adds a new attendance record if not duplicate
   void _addAttendance() {
     if (_formKey.currentState!.validate()) {
       // Checking for duplicate attendance for the same employee and date
@@ -97,6 +101,7 @@ class _AttendanceManagerState extends State<AttendanceManager> {
     }
   }
 
+  // Opens date picker dialog
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -109,22 +114,23 @@ class _AttendanceManagerState extends State<AttendanceManager> {
     }
   }
 
+  // Exports attendance records to XML file
   Future<void> _exportToXml() async {
-  try {
-    final filePath = await XmlHelper.exportRecordsToXml(_attendanceRecords);
-    setState(() => _lastExportPath = filePath);
+    try {
+      final filePath = await XmlHelper.exportRecordsToXml(_attendanceRecords);
+      setState(() => _lastExportPath = filePath);
 
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('XML exported to $filePath')),
-    );
-  } catch (e) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to export XML: \$e')),
-    );
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('XML exported to $filePath')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to export XML: \$e')));
+    }
   }
-}
 
   @override
   void dispose() {
@@ -141,6 +147,7 @@ class _AttendanceManagerState extends State<AttendanceManager> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
+            // Attendance input form
             Form(
               key: _formKey,
               child: Column(
@@ -153,6 +160,7 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                     padding: const EdgeInsets.all(12),
                     child: Column(
                       children: [
+                        // Employee ID input
                         TextFormField(
                           controller: _employeeIdController,
                           decoration: const InputDecoration(
@@ -163,6 +171,7 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                               value!.isEmpty ? 'Enter Employee ID' : null,
                         ),
                         const SizedBox(height: 10),
+                        // Date picker row
                         Row(
                           children: [
                             Expanded(
@@ -177,6 +186,7 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                           ],
                         ),
                         const SizedBox(height: 10),
+                        // Attendance status dropdown
                         DropdownButtonFormField<String>(
                           value: _attendanceStatus,
                           items: const [
@@ -198,6 +208,7 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                           ),
                         ),
                         const SizedBox(height: 10),
+                        // Add Attendance button
                         ElevatedButton(
                           onPressed: _addAttendance,
                           child: const Text('Add Attendance'),
@@ -209,6 +220,7 @@ class _AttendanceManagerState extends State<AttendanceManager> {
               ),
             ),
             const SizedBox(height: 20),
+            // List of attendance records
             Expanded(
               child: ListView.builder(
                 itemCount: _attendanceRecords.length,
@@ -227,18 +239,22 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                 },
               ),
             ),
+            // Action buttons row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                // Save attendance list
                 ElevatedButton(
                   onPressed: _saveAttendance,
                   child: const Text('Save List'),
                 ),
+                // Clear attendance list
                 ElevatedButton(
                   onPressed: _clearAttendance,
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                   child: const Text('Clear List'),
                 ),
+                // View attendance list in a new screen
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
@@ -251,21 +267,24 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                   },
                   child: const Text('View List'),
                 ),
+                // Export attendance list to XML
                 ElevatedButton.icon(
-  icon: const Icon(Icons.download),
-  label: const Text('Export to XML'),
-  onPressed: _exportToXml,
-  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-),
-
-if (_lastExportPath != null) ...[
-  const SizedBox(height: 10),
-  Text(
-    'File saved at:\n\$_lastExportPath',
-    textAlign: TextAlign.center,
-    style: const TextStyle(color: Colors.white, fontSize: 14),
-  ),
-]
+                  icon: const Icon(Icons.download),
+                  label: const Text('Export to XML'),
+                  onPressed: _exportToXml,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
+                ),
+                // Show file path if exported
+                if (_lastExportPath != null) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    'File saved at:\n$_lastExportPath',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                ],
               ],
             ),
           ],
