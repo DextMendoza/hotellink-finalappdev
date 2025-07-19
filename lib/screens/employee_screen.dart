@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:final_project_in_appdev/models/employee.dart';
 import 'package:final_project_in_appdev/utils/constants.dart';
 
+// Displays a list of all employees passed to this screen.
 class EmployeeScreen extends StatelessWidget {
   final List<Employee> employees;
 
