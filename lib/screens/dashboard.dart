@@ -1,11 +1,12 @@
-// Enhanced Dashboard with icon transitions in drawer
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:final_project_in_appdev/screens/employee_management.dart';
 import 'package:final_project_in_appdev/screens/attendance_manager.dart';
 import 'package:final_project_in_appdev/screens/payroll_management.dart';
 import 'package:final_project_in_appdev/screens/profile_page.dart';
 import 'package:final_project_in_appdev/screens/login_screen.dart';
 import 'package:final_project_in_appdev/utils/constants.dart';
+import 'dart:async';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -19,7 +20,9 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     // Main dashboard layout with gradient background and grid menu
     return Container(
-      decoration: const BoxDecoration(gradient: Constants.backgroundGradient),
+      decoration: const BoxDecoration(
+        gradient: Constants.backgroundGradient,
+      ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -33,7 +36,9 @@ class _DashboardState extends State<Dashboard> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProfilePage()),
+                  MaterialPageRoute(
+                    builder: (context) => const ProfilePage(),
+                  ),
                 );
               },
             ),
@@ -60,19 +65,15 @@ class _DashboardState extends State<Dashboard> {
                     label: 'Employee Management',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const EmployeeManagement(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const EmployeeManagement()),
                     ),
                   ),
                   _AnimatedTile(
-                    icon: Icons.access_time,
+                    icon: Icons.note,
                     label: 'Attendance Manager',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const AttendanceManager(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const AttendanceManager()),
                     ),
                   ),
                   _AnimatedTile(
@@ -80,11 +81,10 @@ class _DashboardState extends State<Dashboard> {
                     label: 'Payroll Management',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const PayrollReport(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const PayrollReport()),
                     ),
                   ),
+                  _DateTimeTile(), // New date/time tile
                 ],
               );
             },
@@ -95,7 +95,86 @@ class _DashboardState extends State<Dashboard> {
   }
 }
 
-// Animated tile for dashboard grid
+//Tile that displays current date and time, updates in real time
+class _DateTimeTile extends StatefulWidget {
+  const _DateTimeTile({Key? key}) : super(key: key);
+
+  @override
+  State<_DateTimeTile> createState() => _DateTimeTileState();
+}
+
+class _DateTimeTileState extends State<_DateTimeTile> {
+  late String _currentTime;
+  late String _currentDate;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateTime();
+    // Update time every second
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _updateTime();
+    });
+  }
+
+  void _updateTime() {
+    final now = DateTime.now();
+    setState(() {
+      _currentTime = DateFormat('hh:mm:ss a').format(now);
+      _currentDate = DateFormat('EEE, MMM d y').format(now);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.access_time, size: 48, color: Constants.primaryColor),
+          const SizedBox(height: 12),
+          Text(
+            _currentTime,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Constants.textColor,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _currentDate,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Constants.textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _AnimatedTile extends StatefulWidget {
   final IconData icon;
   final String label;
@@ -111,8 +190,7 @@ class _AnimatedTile extends StatefulWidget {
   State<_AnimatedTile> createState() => _AnimatedTileState();
 }
 
-class _AnimatedTileState extends State<_AnimatedTile>
-    with SingleTickerProviderStateMixin {
+class _AnimatedTileState extends State<_AnimatedTile> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -191,7 +269,7 @@ class NavigationDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Drawer with navigation options
+     // Drawer with navigation options
     return Drawer(
       child: Column(
         children: [
@@ -232,9 +310,7 @@ class NavigationDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const EmployeeManagement(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const EmployeeManagement()),
                     );
                   },
                 ),
@@ -245,9 +321,7 @@ class NavigationDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const AttendanceManager(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const AttendanceManager()),
                     );
                   },
                 ),
@@ -258,9 +332,7 @@ class NavigationDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const PayrollReport(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const PayrollReport()),
                     );
                   },
                 ),
@@ -271,15 +343,13 @@ class NavigationDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
                     );
                   },
                 ),
               ],
             ),
-          ),
+          )
         ],
       ),
     );
@@ -302,8 +372,7 @@ class _AnimatedDrawerTile extends StatefulWidget {
   State<_AnimatedDrawerTile> createState() => _AnimatedDrawerTileState();
 }
 
-class _AnimatedDrawerTileState extends State<_AnimatedDrawerTile>
-    with SingleTickerProviderStateMixin {
+class _AnimatedDrawerTileState extends State<_AnimatedDrawerTile> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
@@ -340,7 +409,7 @@ class _AnimatedDrawerTileState extends State<_AnimatedDrawerTile>
           leading: Icon(widget.icon, color: Constants.primaryColor),
           title: Text(widget.label),
           onTap: widget.onTap,
-        ),
+        ),  
       ),
     );
   }
