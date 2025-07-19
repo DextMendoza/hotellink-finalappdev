@@ -8,8 +8,8 @@ import 'package:final_project_in_appdev/screens/attendance_manager.dart';
 import 'package:final_project_in_appdev/screens/payroll_management.dart';
 import 'package:final_project_in_appdev/screens/profile_page.dart';
 
-
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
