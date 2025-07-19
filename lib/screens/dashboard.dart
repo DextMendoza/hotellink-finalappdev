@@ -17,10 +17,9 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
+    // Main dashboard layout with gradient background and grid menu
     return Container(
-      decoration: const BoxDecoration(
-        gradient: Constants.backgroundGradient,
-      ),
+      decoration: const BoxDecoration(gradient: Constants.backgroundGradient),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -28,14 +27,13 @@ class _DashboardState extends State<Dashboard> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           actions: [
+            // Profile button in the app bar
             IconButton(
               icon: const Icon(Icons.person),
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfilePage(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const ProfilePage()),
                 );
               },
             ),
@@ -49,6 +47,7 @@ class _DashboardState extends State<Dashboard> {
               final isWide = constraints.maxWidth > 600;
               final crossAxisCount = isWide ? 3 : 2;
 
+              // Dashboard grid menu
               return GridView.count(
                 crossAxisCount: crossAxisCount,
                 crossAxisSpacing: 16,
@@ -61,7 +60,9 @@ class _DashboardState extends State<Dashboard> {
                     label: 'Employee Management',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const EmployeeManagement()),
+                      MaterialPageRoute(
+                        builder: (context) => const EmployeeManagement(),
+                      ),
                     ),
                   ),
                   _AnimatedTile(
@@ -69,7 +70,9 @@ class _DashboardState extends State<Dashboard> {
                     label: 'Attendance Manager',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const AttendanceManager()),
+                      MaterialPageRoute(
+                        builder: (context) => const AttendanceManager(),
+                      ),
                     ),
                   ),
                   _AnimatedTile(
@@ -77,7 +80,9 @@ class _DashboardState extends State<Dashboard> {
                     label: 'Payroll Management',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const PayrollReport()),
+                      MaterialPageRoute(
+                        builder: (context) => const PayrollReport(),
+                      ),
                     ),
                   ),
                 ],
@@ -90,6 +95,7 @@ class _DashboardState extends State<Dashboard> {
   }
 }
 
+// Animated tile for dashboard grid
 class _AnimatedTile extends StatefulWidget {
   final IconData icon;
   final String label;
@@ -105,7 +111,8 @@ class _AnimatedTile extends StatefulWidget {
   State<_AnimatedTile> createState() => _AnimatedTileState();
 }
 
-class _AnimatedTileState extends State<_AnimatedTile> with SingleTickerProviderStateMixin {
+class _AnimatedTileState extends State<_AnimatedTile>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -132,6 +139,7 @@ class _AnimatedTileState extends State<_AnimatedTile> with SingleTickerProviderS
 
   @override
   Widget build(BuildContext context) {
+    // Tile with scale animation on tap
     return GestureDetector(
       onTapDown: _onTapDown,
       onTapUp: (details) {
@@ -177,11 +185,13 @@ class _AnimatedTileState extends State<_AnimatedTile> with SingleTickerProviderS
   }
 }
 
+// Drawer for navigation between app sections
 class NavigationDrawer extends StatelessWidget {
   const NavigationDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Drawer with navigation options
     return Drawer(
       child: Column(
         children: [
@@ -222,7 +232,9 @@ class NavigationDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const EmployeeManagement()),
+                      MaterialPageRoute(
+                        builder: (context) => const EmployeeManagement(),
+                      ),
                     );
                   },
                 ),
@@ -233,7 +245,9 @@ class NavigationDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const AttendanceManager()),
+                      MaterialPageRoute(
+                        builder: (context) => const AttendanceManager(),
+                      ),
                     );
                   },
                 ),
@@ -244,7 +258,9 @@ class NavigationDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const PayrollReport()),
+                      MaterialPageRoute(
+                        builder: (context) => const PayrollReport(),
+                      ),
                     );
                   },
                 ),
@@ -255,19 +271,22 @@ class NavigationDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
                     );
                   },
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
   }
 }
 
+// Animated tile for drawer navigation
 class _AnimatedDrawerTile extends StatefulWidget {
   final IconData icon;
   final String label;
@@ -283,7 +302,8 @@ class _AnimatedDrawerTile extends StatefulWidget {
   State<_AnimatedDrawerTile> createState() => _AnimatedDrawerTileState();
 }
 
-class _AnimatedDrawerTileState extends State<_AnimatedDrawerTile> with SingleTickerProviderStateMixin {
+class _AnimatedDrawerTileState extends State<_AnimatedDrawerTile>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
@@ -311,6 +331,7 @@ class _AnimatedDrawerTileState extends State<_AnimatedDrawerTile> with SingleTic
 
   @override
   Widget build(BuildContext context) {
+    // Drawer tile with slide and fade animation
     return FadeTransition(
       opacity: _fadeAnimation,
       child: SlideTransition(
