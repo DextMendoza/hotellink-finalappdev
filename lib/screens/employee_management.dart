@@ -1,8 +1,13 @@
+// Updated EmployeeManagement screen with XML export integration and download confirmation
+
 import 'package:flutter/material.dart';
 import 'package:final_project_in_appdev/models/employee.dart';
 import 'package:final_project_in_appdev/screens/employee_screen.dart';
 import 'package:final_project_in_appdev/utils/constants.dart';
 import 'package:final_project_in_appdev/utils/employee_storage.dart';
+import 'package:final_project_in_appdev/utils/xml_helper.dart'; // New XML helper
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class EmployeeManagement extends StatefulWidget {
   const EmployeeManagement({super.key});
@@ -19,6 +24,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
   final _salaryController = TextEditingController();
   List<Employee> _employees = [];
   int? _editingIndex;
+  String? _lastExportPath;
 
   @override
   void initState() {
@@ -77,6 +83,20 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
     _editingIndex = index;
   }
 
+  Future<void> _exportToXml() async {
+    try {
+      final path = await XmlHelper.exportEmployeesToXml(_employees);
+      setState(() => _lastExportPath = path);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Exported to XML: $path')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Export failed: $e')),
+      );
+    }
+  }
+
   @override
   void dispose() {
     _employeeIdController.dispose();
@@ -89,7 +109,16 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Employee Management')),
+      appBar: AppBar(
+        title: const Text('Employee Management'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download),
+            tooltip: 'Export to XML',
+            onPressed: _exportToXml,
+          ),
+        ],
+      ),
       body: Container(
         decoration: const BoxDecoration(gradient: Constants.backgroundGradient),
         padding: const EdgeInsets.all(20.0),
