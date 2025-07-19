@@ -200,7 +200,7 @@ class NavigationDrawer extends StatelessWidget {
                   Icon(Icons.lock_clock, color: Colors.white, size: 28),
                   SizedBox(width: 10),
                   Text(
-                    'Payroll Management',
+                    'HotelLink HRIS',
                     style: TextStyle(color: Colors.white, fontSize: 20),
                   ),
                 ],
