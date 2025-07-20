@@ -3,9 +3,9 @@ import 'package:http/http.dart' as http;
 
 class OtpService {
   static Future<String?> sendOtp(String email) async {
-    const serviceId = 'service_kces6fg';
-    const templateId = 'template_zh5zolj';
-    const userId = 'DjKZ32hhsQEjPrI3h'; // public key from EmailJS
+    const serviceId = '';
+    const templateId = '';
+    const userId = ''; // public key from EmailJS
     final otp = _generateOtp();
 
     final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
