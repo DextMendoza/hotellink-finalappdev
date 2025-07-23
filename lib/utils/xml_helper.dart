@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'package:xml/xml.dart';
 import 'package:final_project_in_appdev/models/attendance_record.dart';
@@ -9,102 +8,95 @@ import 'package:final_project_in_appdev/models/payroll_record.dart';
 class XmlHelper {
   // ----------- ATTENDANCE ----------
 
-  static String toXml(List<AttendanceRecord> records) {
+  static String attendanceListToXml(List<AttendanceRecord> records) {
     try {
-      if (records.isEmpty) throw Exception('No records provided');
+      if (records.isEmpty) throw Exception('No attendance records provided');
 
       final builder = XmlBuilder();
       builder.processing('xml', 'version="1.0"');
       builder.element('AttendanceRecords', nest: () {
         for (var record in records) {
           builder.element('Record', nest: () {
-            builder.element('Id', nest: record.id);
             builder.element('EmployeeId', nest: record.employeeId);
-            builder.element('Date', nest: record.date);
+            builder.element('Email', nest: record.email);
+            builder.element('Date', nest: record.date.toIso8601String());
             builder.element('Status', nest: record.status);
+            builder.element('TimeIn', nest: record.timeIn);
+            builder.element('TimeOut', nest: record.timeOut);
           });
         }
       });
 
-      final xmlString = builder.buildDocument().toXmlString(pretty: true);
-      if (xmlString.isEmpty) throw Exception('Generated XML is empty');
-
-      return xmlString;
+      return builder.buildDocument().toXmlString(pretty: true);
     } catch (e) {
-      throw Exception('XML generation failed: $e');
+      throw Exception('Attendance XML generation failed: $e');
     }
   }
 
-  static Future<String> exportRecordsToXml(List<AttendanceRecord> records) async {
+  static Future<String> exportAttendanceToXml(List<AttendanceRecord> records) async {
     try {
-      final xmlString = toXml(records);
+      final xmlString = attendanceListToXml(records);
       final directory = await getApplicationDocumentsDirectory();
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final file = File('${directory.path}/attendance_$timestamp.xml');
+      final file = File('${directory.path}/attendance_${DateTime.now().millisecondsSinceEpoch}.xml');
       await file.writeAsString(xmlString);
-      if (!await file.exists()) throw Exception('File was not created');
       return file.path;
     } catch (e) {
-      throw Exception('Failed to export records: $e');
+      throw Exception('Failed to export attendance records: $e');
     }
   }
 
-  static List<AttendanceRecord> fromXml(String xmlString) {
+  static List<AttendanceRecord> parseAttendanceXml(String xmlString) {
     try {
       if (xmlString.isEmpty) throw Exception('Empty XML string');
       final document = XmlDocument.parse(xmlString);
-      final records = document.findAllElements('Record').map((element) {
+      return document.findAllElements('Record').map((element) {
         return AttendanceRecord(
-          id: element.getElement('Id')?.text ?? '',
           employeeId: element.getElement('EmployeeId')?.text ?? '',
-          date: element.getElement('Date')?.text ?? '',
+          email: element.getElement('Email')?.text ?? '',
+          date: DateTime.parse(element.getElement('Date')?.text ?? ''),
           status: element.getElement('Status')?.text ?? '',
+          timeIn: element.getElement('TimeIn')?.text ?? '',
+          timeOut: element.getElement('TimeOut')?.text ?? '',
         );
       }).toList();
-
-      if (records.isEmpty) throw Exception('No records found in XML');
-      return records;
     } catch (e) {
-      throw Exception('Failed to parse XML: $e');
+      throw Exception('Failed to parse attendance XML: $e');
     }
   }
 
-  static Future<List<AttendanceRecord>> importRecordsFromXmlFile(String path) async {
+  static Future<List<AttendanceRecord>> importAttendanceFromXmlFile(String path) async {
     try {
       final file = File(path);
-      if (!await file.exists()) throw Exception('File not found at $path');
+      if (!await file.exists()) throw Exception('Attendance file not found');
       final xmlString = await file.readAsString();
-      return fromXml(xmlString);
+      return parseAttendanceXml(xmlString);
     } catch (e) {
-      throw Exception('Failed to import records: $e');
+      throw Exception('Failed to import attendance XML: $e');
     }
   }
 
-  // ----------- EMPLOYEES ----------
+  // ----------- EMPLOYEE ----------
 
   static String employeeListToXml(List<Employee> employees) {
     try {
-      if (employees.isEmpty) throw Exception('No employees to export');
+      if (employees.isEmpty) throw Exception('No employee records provided');
 
       final builder = XmlBuilder();
       builder.processing('xml', 'version="1.0"');
       builder.element('Employees', nest: () {
-        for (var emp in employees) {
+        for (var employee in employees) {
           builder.element('Employee', nest: () {
-            builder.element('Id', nest: emp.id);
-            builder.element('EmployeeId', nest: emp.employeeId);
-            builder.element('Name', nest: emp.name);
-            builder.element('Email', nest: emp.email);
-            builder.element('Salary', nest: emp.salary.toString());
+            builder.element('Name', nest: employee.name);
+            builder.element('Position', nest: employee.position);
+            builder.element('Email', nest: employee.email);
+            builder.element('EmployeeId', nest: employee.employeeId);
           });
         }
       });
 
-      final xmlString = builder.buildDocument().toXmlString(pretty: true);
-      if (xmlString.isEmpty) throw Exception('Generated XML is empty');
-      return xmlString;
+      return builder.buildDocument().toXmlString(pretty: true);
     } catch (e) {
-      throw Exception('Failed to generate employee XML: $e');
+      throw Exception('Employee XML generation failed: $e');
     }
   }
 
@@ -112,45 +104,11 @@ class XmlHelper {
     try {
       final xmlString = employeeListToXml(employees);
       final directory = await getApplicationDocumentsDirectory();
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final file = File('${directory.path}/employees_$timestamp.xml');
+      final file = File('${directory.path}/employees_${DateTime.now().millisecondsSinceEpoch}.xml');
       await file.writeAsString(xmlString);
-      if (!await file.exists()) throw Exception('File was not created');
       return file.path;
     } catch (e) {
       throw Exception('Failed to export employees: $e');
-    }
-  }
-
-  static Future<List<Employee>> importEmployeesFromXmlFile(String path) async {
-    try {
-      final file = File(path);
-      if (!await file.exists()) throw Exception('Employee file not found at $path');
-      final xmlString = await file.readAsString();
-      return employeeListFromXml(xmlString);
-    } catch (e) {
-      throw Exception('Failed to import employees: $e');
-    }
-  }
-
-  static List<Employee> employeeListFromXml(String xmlString) {
-    try {
-      if (xmlString.isEmpty) throw Exception('Empty XML string');
-      final document = XmlDocument.parse(xmlString);
-      final employees = document.findAllElements('Employee').map((element) {
-        return Employee(
-          id: element.getElement('Id')?.text ?? '',
-          employeeId: element.getElement('EmployeeId')?.text ?? '',
-          name: element.getElement('Name')?.text ?? '',
-          email: element.getElement('Email')?.text ?? '',
-          salary: double.tryParse(element.getElement('Salary')?.text ?? '0') ?? 0,
-        );
-      }).toList();
-
-      if (employees.isEmpty) throw Exception('No employees found in XML');
-      return employees;
-    } catch (e) {
-      throw Exception('Failed to parse employee XML: $e');
     }
   }
 
@@ -158,7 +116,7 @@ class XmlHelper {
 
   static String payrollListToXml(List<PayrollRecord> payrollList) {
     try {
-      if (payrollList.isEmpty) throw Exception('No payroll items to export');
+      if (payrollList.isEmpty) throw Exception('No payroll records provided');
 
       final builder = XmlBuilder();
       builder.processing('xml', 'version="1.0"');
@@ -166,33 +124,28 @@ class XmlHelper {
         for (var item in payrollList) {
           builder.element('PayrollItem', nest: () {
             builder.element('EmployeeId', nest: item.employeeId);
-            builder.element('Date', nest: item.month);
-            builder.element('Salary', nest: item.salary.toString());
+            builder.element('DateGenerated', nest: item.dateGenerated.toIso8601String());
+            builder.element('HoursWorked', nest: item.hoursWorked.toString());
+            builder.element('TotalSalary', nest: item.totalSalary.toString());
           });
         }
       });
 
-      final xmlString = builder.buildDocument().toXmlString(pretty: true);
-      if (xmlString.isEmpty) throw Exception('Generated XML is empty');
-      return xmlString;
+      return builder.buildDocument().toXmlString(pretty: true);
     } catch (e) {
-      throw Exception('Failed to generate payroll XML: $e');
+      throw Exception('Payroll XML generation failed: $e');
     }
   }
 
-  static Future<String> exportPayrollToXml(List<PayrollRecord> payrollList) async {
+  static Future<String> exportPayrollToXml(List<PayrollRecord> records) async {
     try {
-      final xmlString = payrollListToXml(payrollList);
+      final xmlString = payrollListToXml(records);
       final directory = await getApplicationDocumentsDirectory();
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final file = File('${directory.path}/payroll_$timestamp.xml');
+      final file = File('${directory.path}/payroll_${DateTime.now().millisecondsSinceEpoch}.xml');
       await file.writeAsString(xmlString);
-      if (!await file.exists()) throw Exception('File was not created');
       return file.path;
     } catch (e) {
-      throw Exception('Failed to export payroll: $e');
+      throw Exception('Failed to export payroll records: $e');
     }
   }
 }
-
-//web export
