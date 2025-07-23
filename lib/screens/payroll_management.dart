@@ -1,11 +1,15 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart';
+
 import 'package:final_project_in_appdev/models/payroll_record.dart';
+import 'package:final_project_in_appdev/models/attendance_record.dart';
 import 'package:final_project_in_appdev/screens/payroll_screen.dart';
 import 'package:final_project_in_appdev/utils/constants.dart';
 import 'package:final_project_in_appdev/utils/xml_helper.dart';
+import 'package:final_project_in_appdev/utils/attendance_storage.dart';
+import 'package:final_project_in_appdev/utils/payroll_storage.dart';
+import 'package:final_project_in_appdev/utils/payroll_service.dart';
 
 class PayrollReport extends StatefulWidget {
   const PayrollReport({super.key});
@@ -17,236 +21,277 @@ class PayrollReport extends StatefulWidget {
 class _PayrollReportState extends State<PayrollReport> {
   final _formKey = GlobalKey<FormState>();
   final _employeeIdController = TextEditingController();
-  final _salaryController = TextEditingController();
-  DateTime? _selectedMonth;
+  final _secureStorage = const FlutterSecureStorage();
+
   List<PayrollRecord> _payrollRecords = [];
+  List<AttendanceRecord> _attendanceRecords = [];
+
+  String? _role;
+  String? _userEmail;
+  String? _userEmployeeId;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _role = await _secureStorage.read(key: 'current_user_role');
+    _userEmail = await _secureStorage.read(key: 'current_user_email');
+    _userEmployeeId = await _secureStorage.read(key: 'current_user_id');
+
+    await _loadAttendanceRecords();
+    await _loadPayrollRecords();
+
+    if (_role == 'employee' && _userEmployeeId != null) {
+      _generatePayrollForEmployee(_userEmployeeId!);
+    }
+  }
+
+  Future<void> _loadAttendanceRecords() async {
+    final records = await AttendanceStorage.loadRecords();
+    setState(() => _attendanceRecords = records);
+  }
+
+  Future<void> _loadPayrollRecords() async {
+    final records = await PayrollStorage.loadRecords();
+    setState(() => _payrollRecords = records);
+  }
+
+  void _generatePayrollForEmployee(String empId) {
+    if (_payrollRecords.any((r) => r.employeeId == empId)) return;
+
+    final payroll = PayrollService.computePayroll(empId, _attendanceRecords);
+    if (payroll != null) {
+      setState(() => _payrollRecords.add(payroll));
+      PayrollStorage.saveRecords(_payrollRecords);
+    }
+  }
+
+  void _generatePayrollForAllEmployees() {
+    final employeeIds = _attendanceRecords.map((e) => e.employeeId).toSet();
+
+    for (var empId in employeeIds) {
+      if (_payrollRecords.any((r) => r.employeeId == empId)) continue;
+
+      final payroll = PayrollService.computePayroll(empId, _attendanceRecords);
+      if (payroll != null) {
+        _payrollRecords.add(payroll);
+      }
+    }
+
+    setState(() {});
+    PayrollStorage.saveRecords(_payrollRecords);
+  }
+
+  void _addPayroll() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final empId = _employeeIdController.text.trim();
+    if (_payrollRecords.any((r) => r.employeeId == empId)) {
+      _showSnackBar('Payroll for this Employee ID already exists!', isError: true);
+      return;
+    }
+
+    await _loadAttendanceRecords();
+
+    final payroll = PayrollService.computePayroll(empId, _attendanceRecords);
+    if (payroll != null) {
+      setState(() {
+        _payrollRecords.add(payroll);
+        _employeeIdController.clear();
+      });
+      PayrollStorage.saveRecords(_payrollRecords);
+    } else {
+      _showSnackBar('No attendance data found for this employee.', isError: true);
+    }
+  }
+
+  void _refreshPayroll() async {
+    setState(() => _payrollRecords.clear());
+
+    await _loadAttendanceRecords();
+
+    if (_role == 'employee' && _userEmployeeId != null) {
+      _generatePayrollForEmployee(_userEmployeeId!);
+    } else if (_role == 'admin') {
+      _generatePayrollForAllEmployees();
+    }
+
+    _showSnackBar('Payroll refreshed based on attendance records.');
+  }
+
+  Future<void> _exportToXmlFile() async {
+    try {
+      final filePath = await XmlHelper.payrollListToXml(_payrollRecords);
+      _showSnackBar('Payroll exported to $filePath');
+    } catch (e) {
+      _showSnackBar('Export failed: $e', isError: true);
+    }
+  }
+
+  void _clearRecords() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Confirm Deletion"),
+        content: const Text("Delete all payroll records for today?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              setState(() => _payrollRecords.clear());
+              PayrollStorage.clearRecords();
+              _showSnackBar('Payroll cleared.');
+            },
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: isError ? Colors.red : null),
+    );
+  }
 
   @override
   void dispose() {
     _employeeIdController.dispose();
-    _salaryController.dispose();
     super.dispose();
-  }
-
-  // Show month picker dialog
-  Future<void> _pickMonth(BuildContext context) async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: now,
-      firstDate: DateTime(now.year - 5),
-      lastDate: DateTime(now.year + 5),
-      helpText: 'Select Payroll Month',
-      fieldLabelText: 'Month',
-    );
-    if (picked != null) {
-      setState(() => _selectedMonth = picked);
-    }
-  }
-
-  // Add payroll record if not duplicate
-  void _addPayroll() {
-    if (_formKey.currentState!.validate() && _selectedMonth != null) {
-      final exists = _payrollRecords.any(
-        (record) => record.employeeId == _employeeIdController.text,
-      );
-      if (exists) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Payroll for this Employee ID already exists!'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-      final payrollRecord = PayrollRecord(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        employeeId: _employeeIdController.text,
-        month:
-            '${_selectedMonth!.year}-${_selectedMonth!.month.toString().padLeft(2, '0')}',
-        salary: double.parse(_salaryController.text),
-      );
-      setState(() {
-        _payrollRecords.add(payrollRecord);
-        _employeeIdController.clear();
-        _salaryController.clear();
-        _selectedMonth = null;
-      });
-    }
-  }
-
-  // Export payroll records to XML file
-  Future<void> _exportToXmlFile() async {
-    try {
-      final filePath = await XmlHelper.exportPayrollToXml(_payrollRecords);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Payroll exported successfully to $filePath!')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to export payroll: $e')));
-    }
-  }
-
-  // Clear all payroll records
-  void _clearRecords() {
-    setState(() => _payrollRecords.clear());
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Payroll records cleared for today.')),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Main payroll management UI
+    final isEmployee = _role == 'employee';
+    final filteredRecords = isEmployee && _userEmployeeId != null
+        ? _payrollRecords.where((r) => r.employeeId == _userEmployeeId).toList()
+        : _payrollRecords;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Payroll Report')),
+      appBar: AppBar(
+        title: const Text('Payroll Report'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Container(
+        padding: const EdgeInsets.all(20),
         decoration: const BoxDecoration(gradient: Constants.backgroundGradient),
-        padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  // Employee ID input
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white70,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: TextFormField(
-                      controller: _employeeIdController,
-                      decoration: const InputDecoration(
-                        labelText: 'Employee ID',
-                        border: OutlineInputBorder(borderSide: BorderSide.none),
-                        contentPadding: EdgeInsets.all(12),
-                      ),
-                      validator: (value) =>
-                          value!.isEmpty ? 'Enter employee ID' : null,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  // Month picker
-                  GestureDetector(
-                    onTap: () => _pickMonth(context),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white70,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey),
-                      ),
-                      child: Text(
-                        _selectedMonth == null
-                            ? 'Select Month'
-                            : '${_selectedMonth!.year}-${_selectedMonth!.month.toString().padLeft(2, '0')}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  // Salary input
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white70,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: TextFormField(
-                      controller: _salaryController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(
-                        labelText: 'Salary',
-                        border: OutlineInputBorder(borderSide: BorderSide.none),
-                        contentPadding: EdgeInsets.all(12),
-                      ),
-                      validator: (value) =>
-                          value!.isEmpty ? 'Enter salary' : null,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  // Add Payroll and View Report buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _addPayroll,
-                          child: const Text('Add Payroll'),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ViewPayrollScreen(
-                                  payrollRecords: _payrollRecords,
-                                ),
-                              ),
-                            );
-                          },
-                          child: const Text('View Report'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  // Export and Clear buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _exportToXmlFile,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                          ),
-                          child: const Text('Export to XML'),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _clearRecords,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                          ),
-                          child: const Text('Clear Today\'s List'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            if (!isEmployee) _buildAdminControls(),
             const SizedBox(height: 20),
-            // Payroll records list
-            Expanded(
-              child: ListView.builder(
-                itemCount: _payrollRecords.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(
-                      'Employee ID: ${_payrollRecords[index].employeeId}',
-                    ),
-                    subtitle: Text(
-                      'Month: ${_payrollRecords[index].month}, Salary: ₱${_payrollRecords[index].salary}',
-                    ),
-                  );
-                },
-              ),
-            ),
+            Expanded(child: _buildPayrollList(filteredRecords)),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAdminControls() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          TextFormField(
+            controller: _employeeIdController,
+            decoration: const InputDecoration(
+              labelText: 'Employee ID',
+              filled: true,
+              fillColor: Colors.white70,
+            ),
+            validator: (value) => value!.isEmpty ? 'Enter employee ID' : null,
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _addPayroll,
+                  child: const Text('Add Payroll'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _refreshPayroll,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                  child: const Text('Refresh Payroll'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _exportToXmlFile,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  child: const Text('Export to XML'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _clearRecords,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  child: const Text("Clear Today's List"),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ViewPayrollScreen(
+                    payrollRecords: _payrollRecords,
+                    isEmployee: false,
+                  ),
+                ),
+              );
+            },
+            child: const Text('View Report'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPayrollList(List<PayrollRecord> records) {
+    if (records.isEmpty) {
+      return const Center(child: Text('No payroll records found.'));
+    }
+
+    return ListView.builder(
+      itemCount: records.length,
+      itemBuilder: (context, index) {
+        final record = records[index];
+        return Card(
+          color: Colors.white,
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          child: ListTile(
+            title: Text('Employee ID: ${record.employeeId}'),
+            subtitle: Text(
+              'Hours: ${record.hoursWorked.toStringAsFixed(2)}\n'
+              'Salary: ₱${record.totalSalary.toStringAsFixed(2)}\n'
+              'Date: ${DateFormat.yMMMd().format(record.dateGenerated)}',
+            ),
+          ),
+        );
+      },
     );
   }
 }
