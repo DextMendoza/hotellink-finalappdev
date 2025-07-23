@@ -51,7 +51,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             const Icon(Icons.security, size: 72, color: Colors.blue),
             const SizedBox(height: 20),
             Text(
-              'Enter the verification code sent to the Admin address.',
+              'Enter the verification code sent. Check your inbox, or contact main admin if you are registering for an admin role.',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16),
             ),
