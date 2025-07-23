@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:final_project_in_appdev/screens/dashboard.dart';
+import 'package:final_project_in_appdev/screens/employee_home_screen.dart';
 import 'package:final_project_in_appdev/screens/login_screen.dart';
 import 'package:final_project_in_appdev/utils/constants.dart';
 import 'package:final_project_in_appdev/utils/account_storage.dart';
@@ -21,27 +22,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passwordController = TextEditingController();
   final _secureStorage = const FlutterSecureStorage();
   bool _isLoading = false;
+  String _selectedRole = 'admin'; // Default role
 
   @override
   void initState() {
     super.initState();
-    _loadSecureData(); // Load saved data if any
+    _loadSecureData();
   }
 
   Future<void> _loadSecureData() async {
     _nameController.text = await _secureStorage.read(key: 'name') ?? '';
     _emailController.text = await _secureStorage.read(key: 'email') ?? '';
     _passwordController.text = await _secureStorage.read(key: 'password') ?? '';
+    _selectedRole = await _secureStorage.read(key: 'role') ?? 'admin';
+    setState(() {}); // Refresh UI
   }
 
-  // Handles sign up with OTP verification
   Future<void> _submitWithOtp() async {
     setState(() => _isLoading = true);
 
-    // Check if email already exists
-    final existingUser = await AccountStorage.getUserByEmail(
-      _emailController.text,
-    );
+    final existingUser = await AccountStorage.getUserByEmail(_emailController.text);
     if (existingUser != null) {
       setState(() => _isLoading = false);
       showDialog(
@@ -60,9 +60,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
-    // Send OTP to email
-    final otp = await OtpService.sendOtp(_emailController.text);
-
+    final otp = await OtpService.sendOtp(_emailController.text, _selectedRole);
     setState(() => _isLoading = false);
 
     if (otp == null) {
@@ -82,7 +80,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
-    // Go to OTP verification screen
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -95,41 +92,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // Save user data securely after successful OTP verification
   Future<void> _saveSecureData() async {
     await _secureStorage.write(key: 'name', value: _nameController.text);
     await _secureStorage.write(key: 'email', value: _emailController.text);
-    await _secureStorage.write(
-      key: 'password',
-      value: _passwordController.text,
-    );
+    await _secureStorage.write(key: 'password', value: _passwordController.text);
+    await _secureStorage.write(key: 'role', value: _selectedRole);
 
-    await _secureStorage.write(
-      key: 'current_user_name',
-      value: _nameController.text,
-    );
-    await _secureStorage.write(
-      key: 'current_user_email',
-      value: _emailController.text,
-    );
+    await _secureStorage.write(key: 'current_user_name', value: _nameController.text);
+    await _secureStorage.write(key: 'current_user_email', value: _emailController.text);
 
     await AccountStorage.saveAccount(
       _nameController.text,
       _emailController.text,
       _passwordController.text,
+      _selectedRole,
     );
 
+    // Navigate to appropriate home screen
     Future.delayed(const Duration(milliseconds: 500), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const Dashboard()),
+        MaterialPageRoute(
+          builder: (_) => _selectedRole == 'admin' ? const Dashboard() : const EmployeeHomeScreen(),
+        ),
       );
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // Sign up screen UI
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(gradient: Constants.backgroundGradient),
@@ -145,82 +136,80 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     alignment: Alignment.centerLeft,
                     child: IconButton(
                       icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
+                      onPressed: () => Navigator.pop(context),
                     ),
                   ),
-                  const Icon(
-                    Icons.person_add_alt_1,
-                    size: 80,
-                    color: Colors.white,
-                  ),
+                  const Icon(Icons.person_add_alt_1, size: 80, color: Colors.white),
                   const SizedBox(height: 20),
                   Text(
-                    'Create Admin Account',
+                    'Create ${_selectedRole == 'admin' ? 'Admin' : 'Employee'} Account',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                   ),
                   const SizedBox(height: 30),
-                  // Name input
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
                       labelText: 'Name',
                       prefixIcon: const Icon(Icons.person_outline),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       filled: true,
                       fillColor: Colors.white,
                     ),
-                    validator: (value) =>
-                        value!.isEmpty ? 'Please enter your name' : null,
+                    validator: (value) => value!.isEmpty ? 'Please enter your name' : null,
                   ),
                   const SizedBox(height: 20),
-                  // Email input
                   TextFormField(
                     controller: _emailController,
                     decoration: InputDecoration(
                       labelText: 'Email',
                       prefixIcon: const Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       filled: true,
                       fillColor: Colors.white,
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!Constants.emailRegex.hasMatch(value)) {
-                        return 'Please enter a valid email address';
-                      }
+                      if (value == null || value.isEmpty) return 'Please enter your email';
+                      if (!Constants.emailRegex.hasMatch(value)) return 'Invalid email address';
                       return null;
                     },
                   ),
                   const SizedBox(height: 20),
-                  // Password input
                   TextFormField(
                     controller: _passwordController,
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: 'Password',
                       prefixIcon: const Icon(Icons.lock_outline),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       filled: true,
                       fillColor: Colors.white,
                     ),
-                    validator: (value) =>
-                        value!.isEmpty ? 'Please enter your password' : null,
+                    validator: (value) => value!.isEmpty ? 'Please enter your password' : null,
+                  ),
+                  const SizedBox(height: 20),
+                  DropdownButtonFormField<String>(
+                    value: _selectedRole,
+                    items: const [
+                      DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                      DropdownMenuItem(value: 'employee', child: Text('Employee')),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedRole = value!;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Select Role',
+                      prefixIcon: const Icon(Icons.account_circle),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 30),
-                  // Sign Up button or loading indicator
                   _isLoading
                       ? const CircularProgressIndicator()
                       : SizedBox(
@@ -229,8 +218,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                                  borderRadius: BorderRadius.circular(12)),
                             ),
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
