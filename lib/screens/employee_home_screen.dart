@@ -1,0 +1,121 @@
+import 'package:flutter/material.dart';
+import 'package:final_project_in_appdev/screens/attendance_manager.dart';
+import 'package:final_project_in_appdev/screens/payroll_screen.dart';
+import 'package:final_project_in_appdev/utils/payroll_storage.dart';
+import 'package:final_project_in_appdev/models/payroll_record.dart';
+import 'package:final_project_in_appdev/screens/profile_page.dart';
+
+class EmployeeHomeScreen extends StatelessWidget {
+  const EmployeeHomeScreen({super.key});
+
+  void _openPayroll(BuildContext context) async {
+    List<PayrollRecord> allRecords = await PayrollStorage.loadRecords();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ViewPayrollScreen(
+          payrollRecords: allRecords,
+          isEmployee: true,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Employee Dashboard'),
+        backgroundColor: Colors.blue,
+        actions: [
+            // Profile button in the app bar
+            IconButton(
+              icon: const Icon(Icons.person),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfilePage(),
+                  ),
+                );
+              },
+            ),
+          ],
+        automaticallyImplyLeading: false,
+      ),
+      body: GridView.count(
+        crossAxisCount: 2,
+        padding: const EdgeInsets.all(20),
+        crossAxisSpacing: 20,
+        mainAxisSpacing: 20,
+        children: [
+          _TileButton(
+            icon: Icons.access_time,
+            label: 'Log Attendance',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AttendanceManager()),
+              );
+            },
+          ),
+          _TileButton(
+            icon: Icons.receipt_long,
+            label: 'View Payroll',
+            onTap: () => _openPayroll(context),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TileButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _TileButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: Offset(2, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 48, color: Colors.blue),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
