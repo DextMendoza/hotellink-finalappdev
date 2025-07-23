@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:final_project_in_appdev/models/employee.dart';
 import 'package:final_project_in_appdev/utils/constants.dart';
 
-// Displays a list of all employees passed to this screen.
 class EmployeeScreen extends StatelessWidget {
   final List<Employee> employees;
 
@@ -23,7 +22,7 @@ class EmployeeScreen extends StatelessWidget {
             ? const Center(
                 child: Text(
                   'No employees added yet.',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               )
             : ListView.builder(
@@ -32,19 +31,31 @@ class EmployeeScreen extends StatelessWidget {
                   final emp = employees[index];
                   return Card(
                     margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        child: Text(emp.name[0]),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.blueAccent,
+                          child: Text(
+                            emp.name[0].toUpperCase(),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        title: Text(emp.name,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16)),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 6.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Employee ID: ${emp.employeeId}'),
+                              Text('Email: ${emp.email}'),
+                              Text('Position: ${emp.position}'),
+                            ],
+                          ),
+                        ),
                       ),
-                      title: Text(emp.name),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('ID: ${emp.employeeId}'),
-                          Text('Email: ${emp.email}'),
-                        ],
-                      ),
-                      trailing: Text('₱${emp.salary.toStringAsFixed(2)}'),
                     ),
                   );
                 },
