@@ -4,26 +4,27 @@ import 'package:final_project_in_appdev/utils/constants.dart';
 
 class ViewPayrollScreen extends StatefulWidget {
   final List<PayrollRecord> payrollRecords;
+  final bool isEmployee;
 
-  const ViewPayrollScreen({super.key, required this.payrollRecords});
+  const ViewPayrollScreen({
+    super.key,
+    required this.payrollRecords,
+    required this.isEmployee,
+  });
 
   @override
   State<ViewPayrollScreen> createState() => _ViewPayrollScreenState();
 }
 
 class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
-  // Edit a payroll record at the given index
   void _editRecord(BuildContext context, int index) {
+    if (widget.isEmployee) return; // Extra safety check
+
     final record = widget.payrollRecords[index];
-    final TextEditingController employeeIdController = TextEditingController(
-      text: record.employeeId,
-    );
-    final TextEditingController monthController = TextEditingController(
-      text: record.month,
-    );
-    final TextEditingController salaryController = TextEditingController(
-      text: record.salary.toString(),
-    );
+
+    final employeeIdController = TextEditingController(text: record.employeeId);
+    final hoursWorkedController = TextEditingController(text: record.hoursWorked.toString());
+    final totalSalaryController = TextEditingController(text: record.totalSalary.toString());
 
     showDialog(
       context: context,
@@ -32,21 +33,19 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Employee ID input
             TextField(
               controller: employeeIdController,
               decoration: const InputDecoration(labelText: 'Employee ID'),
             ),
-            // Month input
             TextField(
-              controller: monthController,
-              decoration: const InputDecoration(labelText: 'Month (YYYY-MM)'),
-            ),
-            // Salary input
-            TextField(
-              controller: salaryController,
+              controller: hoursWorkedController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Salary'),
+              decoration: const InputDecoration(labelText: 'Hours Worked'),
+            ),
+            TextField(
+              controller: totalSalaryController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Total Salary'),
             ),
           ],
         ),
@@ -59,11 +58,10 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
             onPressed: () {
               setState(() {
                 widget.payrollRecords[index] = PayrollRecord(
-                  id: record.id,
                   employeeId: employeeIdController.text,
-                  month: monthController.text,
-                  salary:
-                      double.tryParse(salaryController.text) ?? record.salary,
+                  hoursWorked: double.tryParse(hoursWorkedController.text) ?? record.hoursWorked,
+                  totalSalary: double.tryParse(totalSalaryController.text) ?? record.totalSalary,
+                  dateGenerated: record.dateGenerated,
                 );
               });
               Navigator.pop(context);
@@ -75,8 +73,9 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
     );
   }
 
-  // Delete a payroll record at the given index
   void _deleteRecord(int index) {
+    if (widget.isEmployee) return; // Extra safety check
+
     setState(() {
       widget.payrollRecords.removeAt(index);
     });
@@ -84,11 +83,14 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Payroll report view UI
     return Scaffold(
-      appBar: AppBar(title: const Text('Payroll Report View')),
+      appBar: AppBar(
+        title: const Text('Payroll Report View'),
+        backgroundColor: Colors.blue,
+      ),
       body: Container(
         decoration: const BoxDecoration(gradient: Constants.backgroundGradient),
+        padding: const EdgeInsets.all(12.0),
         child: widget.payrollRecords.isEmpty
             ? const Center(child: Text('No payroll records found.'))
             : ListView.builder(
@@ -96,30 +98,33 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
                 itemBuilder: (context, index) {
                   final record = widget.payrollRecords[index];
                   return Card(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     child: ListTile(
-                      title: Text('Employee ID: ${record.employeeId}'),
+                      title: Text(
+                        'Employee ID: ${record.employeeId}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
                       subtitle: Text(
-                        'Month: ${record.month}\nSalary: ₱${record.salary}',
+                        'Hours Worked: ${record.hoursWorked.toStringAsFixed(2)}\n'
+                        'Total Salary: ₱${record.totalSalary.toStringAsFixed(2)}\n'
+                        'Date: ${record.dateGenerated.toLocal().toString().split(' ')[0]}',
                       ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Edit button
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _editRecord(context, index),
-                          ),
-                          // Delete button
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _deleteRecord(index),
-                          ),
-                        ],
-                      ),
+                      trailing: widget.isEmployee
+                          ? null
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () => _editRecord(context, index),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () => _deleteRecord(index),
+                                ),
+                              ],
+                            ),
                     ),
                   );
                 },
