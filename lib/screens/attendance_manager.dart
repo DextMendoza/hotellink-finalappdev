@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:final_project_in_appdev/utils/constants.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:final_project_in_appdev/models/attendance_record.dart';
-import 'package:final_project_in_appdev/screens/attendance_list_screen.dart';
-import 'package:final_project_in_appdev/utils/xml_helper.dart';
-import 'package:final_project_in_appdev/utils/file_exporter.dart';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import 'package:final_project_in_appdev/utils/attendance_storage.dart';
 
-// Main widget for managing attendance
 class AttendanceManager extends StatefulWidget {
   const AttendanceManager({super.key});
 
@@ -19,89 +14,133 @@ class AttendanceManager extends StatefulWidget {
 class _AttendanceManagerState extends State<AttendanceManager> {
   final _formKey = GlobalKey<FormState>();
   final _employeeIdController = TextEditingController();
+  final _timeInController = TextEditingController();
+  final _timeOutController = TextEditingController();
+  final _secureStorage = const FlutterSecureStorage();
+
+  List<AttendanceRecord> _records = [];
   DateTime _selectedDate = DateTime.now();
-  String _attendanceStatus = 'Present';
-  String? _lastExportPath;
+  String _status = 'Present';
+  String? _role;
+  String? _userEmail;
 
-  List<AttendanceRecord> _attendanceRecords = [];
-
-  // Load saved attendance on start
   @override
   void initState() {
     super.initState();
+    _loadUserRoleAndData();
+  }
+
+  Future<void> _loadUserRoleAndData() async {
+    final email = await _secureStorage.read(key: 'current_user_email');
+    final role = await _secureStorage.read(key: 'current_user_role');
+
+    setState(() {
+      _role = role;
+      _userEmail = email;
+    });
+
     _loadAttendance();
   }
 
-  // Loads attendance records from SharedPreferences
   Future<void> _loadAttendance() async {
-    final prefs = await SharedPreferences.getInstance();
-    final xmlData = prefs.getString('attendance_records');
-    if (xmlData != null) {
-      final records = XmlHelper.fromXml(xmlData);
-      setState(() {
-        _attendanceRecords = records;
-      });
-    }
-  }
-
-  // Saves attendance records to SharedPreferences as XML
-  Future<void> _saveAttendance() async {
-    final prefs = await SharedPreferences.getInstance();
-    final xmlData = XmlHelper.toXml(_attendanceRecords);
-    await prefs.setString('attendance_records', xmlData);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Attendance list saved as XML.')),
-    );
-  }
-
-  // Clears all attendance records
-  Future<void> _clearAttendance() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('attendance_records');
+    final allRecords = await AttendanceStorage.loadRecords();
     setState(() {
-      _attendanceRecords.clear();
+      _records = _role == 'employee'
+          ? allRecords.where((r) => r.email == _userEmail).toList()
+          : allRecords;
     });
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Attendance list cleared.')));
   }
 
-  // Adds a new attendance record if not duplicate
+  Future<void> _saveAttendance() async {
+    await AttendanceStorage.saveRecords(_records);
+  }
+
   void _addAttendance() {
-    if (_formKey.currentState!.validate()) {
-      // Checking for duplicate attendance for the same employee and date
-      final alreadyExists = _attendanceRecords.any(
-        (record) =>
-            record.employeeId == _employeeIdController.text &&
-            record.date.split('T')[0] ==
-                _selectedDate.toIso8601String().split('T')[0],
+    if (!_formKey.currentState!.validate()) return;
+
+    final employeeId = _role == 'employee'
+        ? _userEmail ?? 'unknown'
+        : _employeeIdController.text.trim();
+
+    final alreadyExists = _records.any((r) =>
+        r.employeeId == employeeId &&
+        r.date.year == _selectedDate.year &&
+        r.date.month == _selectedDate.month &&
+        r.date.day == _selectedDate.day);
+
+    if (alreadyExists) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Attendance already recorded for this employee and date.'),
+          backgroundColor: Colors.red,
+        ),
       );
-      if (alreadyExists) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Attendance for this employee on this date already exists.',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-      final record = AttendanceRecord(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        employeeId: _employeeIdController.text,
-        date: _selectedDate.toIso8601String(),
-        status: _attendanceStatus,
-      );
-      setState(() {
-        _attendanceRecords.add(record);
-      });
+      return;
+    }
+
+    final newRecord = AttendanceRecord(
+      employeeId: employeeId,
+      email: _userEmail ?? 'unknown',
+      date: _selectedDate,
+      status: _status,
+      timeIn: _timeInController.text.trim(),
+      timeOut: _timeOutController.text.trim(),
+    );
+
+    setState(() {
+      _records.add(newRecord);
+    });
+
+    _clearFormFields();
+    _saveAttendance();
+  }
+
+  void _clearFormFields() {
+    setState(() {
       _employeeIdController.clear();
-      _attendanceStatus = 'Present';
+      _timeInController.clear();
+      _timeOutController.clear();
+      _selectedDate = DateTime.now();
+      _status = 'Present';
+    });
+  }
+
+  Future<void> _deleteAllAttendance() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete All Attendance?'),
+        content: const Text('This will permanently delete all attendance records. Continue?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Delete')),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() {
+        if (_role == 'employee') {
+          _records.removeWhere((r) => r.email == _userEmail);
+        } else {
+          _records.clear();
+        }
+      });
+      await _saveAttendance();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _role == 'employee'
+                ? 'Your attendance records deleted.'
+                : 'All attendance records deleted.',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
-  // Opens date picker dialog
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -109,106 +148,122 @@ class _AttendanceManagerState extends State<AttendanceManager> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-    if (picked != null && picked != _selectedDate) {
+
+    if (picked != null) {
       setState(() => _selectedDate = picked);
     }
   }
 
-  // Exports attendance records to XML file
-  Future<void> _exportToXml() async {
-    try {
-      final filePath = await XmlHelper.exportRecordsToXml(_attendanceRecords);
-      setState(() => _lastExportPath = filePath);
+  Future<void> _pickTime({required bool isTimeIn}) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
 
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('XML exported to $filePath')));
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to export XML: \$e')));
+    if (picked != null) {
+      final formatted = picked.format(context);
+      setState(() {
+        if (isTimeIn) {
+          _timeInController.text = formatted;
+        } else {
+          _timeOutController.text = formatted;
+        }
+      });
     }
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, {IconData? icon}) {
+    return TextFormField(
+      controller: controller,
+      readOnly: icon != null,
+      validator: (val) => val == null || val.trim().isEmpty ? 'Required' : null,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        suffixIcon: icon != null ? Icon(icon) : null,
+      ),
+    );
   }
 
   @override
   void dispose() {
     _employeeIdController.dispose();
+    _timeInController.dispose();
+    _timeOutController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isEmployee = _role == 'employee';
+
     return Scaffold(
       appBar: AppBar(title: const Text('Attendance Manager')),
-      body: Container(
-        decoration: const BoxDecoration(gradient: Constants.backgroundGradient),
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            // Attendance input form
-            Form(
-              key: _formKey,
+      body: _role == null
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(200, 255, 255, 255),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.all(12),
+                  Form(
+                    key: _formKey,
                     child: Column(
                       children: [
-                        // Employee ID input
-                        TextFormField(
-                          controller: _employeeIdController,
-                          decoration: const InputDecoration(
-                            labelText: 'Employee ID',
-                            border: OutlineInputBorder(),
+                        if (!isEmployee)
+                          _buildTextField(_employeeIdController, 'Employee ID'),
+                        const SizedBox(height: 10),
+
+                        GestureDetector(
+                          onTap: () => _pickTime(isTimeIn: true),
+                          child: AbsorbPointer(
+                            child: _buildTextField(
+                              _timeInController,
+                              'Select Time In',
+                              icon: Icons.access_time,
+                            ),
                           ),
-                          validator: (value) =>
-                              value!.isEmpty ? 'Enter Employee ID' : null,
                         ),
                         const SizedBox(height: 10),
-                        // Date picker row
+
+                        GestureDetector(
+                          onTap: () => _pickTime(isTimeIn: false),
+                          child: AbsorbPointer(
+                            child: _buildTextField(
+                              _timeOutController,
+                              'Select Time Out',
+                              icon: Icons.access_time,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
                         Row(
                           children: [
                             Expanded(
-                              child: Text(
-                                'Date: ${_selectedDate.toLocal().toString().split(' ')[0]}',
-                              ),
+                              child: Text('Date: ${_selectedDate.toLocal().toString().split(' ')[0]}'),
                             ),
                             TextButton(
                               onPressed: _pickDate,
-                              child: const Text('Select Date'),
+                              child: const Text('Pick Date'),
                             ),
                           ],
                         ),
                         const SizedBox(height: 10),
-                        // Attendance status dropdown
+
                         DropdownButtonFormField<String>(
-                          value: _attendanceStatus,
+                          value: _status,
                           items: const [
-                            DropdownMenuItem(
-                              value: 'Present',
-                              child: Text('Present'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'Absent',
-                              child: Text('Absent'),
-                            ),
+                            DropdownMenuItem(value: 'Present', child: Text('Present')),
+                            DropdownMenuItem(value: 'Absent', child: Text('Absent')),
                           ],
-                          onChanged: (value) {
-                            setState(() => _attendanceStatus = value!);
-                          },
+                          onChanged: (val) => setState(() => _status = val!),
                           decoration: const InputDecoration(
-                            labelText: 'Attendance Status',
+                            labelText: 'Status',
                             border: OutlineInputBorder(),
                           ),
                         ),
                         const SizedBox(height: 10),
-                        // Add Attendance button
+
                         ElevatedButton(
                           onPressed: _addAttendance,
                           child: const Text('Add Attendance'),
@@ -216,80 +271,39 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            // List of attendance records
-            Expanded(
-              child: ListView.builder(
-                itemCount: _attendanceRecords.length,
-                itemBuilder: (context, index) {
-                  final record = _attendanceRecords[index];
-                  return ListTile(
-                    tileColor: const Color.fromARGB(179, 255, 255, 255),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    title: Text('Employee ID: ${record.employeeId}'),
-                    subtitle: Text(
-                      'Date: ${record.date.split("T")[0]}, Status: ${record.status}',
-                    ),
-                  );
-                },
-              ),
-            ),
-            // Action buttons row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Save attendance list
-                ElevatedButton(
-                  onPressed: _saveAttendance,
-                  child: const Text('Save List'),
-                ),
-                // Clear attendance list
-                ElevatedButton(
-                  onPressed: _clearAttendance,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  child: const Text('Clear List'),
-                ),
-                // View attendance list in a new screen
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            AttendanceListScreen(records: _attendanceRecords),
-                      ),
-                    );
-                  },
-                  child: const Text('View List'),
-                ),
-                // Export attendance list to XML
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.download),
-                  label: const Text('Export to XML'),
-                  onPressed: _exportToXml,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                  const SizedBox(height: 20),
+
+                  Expanded(
+                    child: _records.isEmpty
+                        ? const Text('No attendance records found.')
+                        : ListView.builder(
+                            itemCount: _records.length,
+                            itemBuilder: (context, index) {
+                              final r = _records[index];
+                              final dateStr = r.date.toLocal().toString().split(' ')[0];
+                              return ListTile(
+                                title: Text('ID: ${r.employeeId}'),
+                                subtitle: Text('Date: $dateStr | Status: ${r.status}\nIn: ${r.timeIn} - Out: ${r.timeOut}'),
+                              );
+                            },
+                          ),
                   ),
-                ),
-                // Show file path if exported
-                if (_lastExportPath != null) ...[
                   const SizedBox(height: 10),
-                  Text(
-                    'File saved at:\n$_lastExportPath',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+
+                  if (!isEmployee)
+                    ElevatedButton(
+                      onPressed: _clearFormFields,
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                      child: const Text('Clear Form'),
+                    ),
+                  ElevatedButton(
+                    onPressed: _deleteAllAttendance,
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    child: Text(isEmployee ? 'Delete My Records' : 'Delete All Records'),
                   ),
                 ],
-              ],
+              ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }
