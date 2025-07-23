@@ -2,13 +2,25 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class OtpService {
-  static Future<String?> sendOtp(String email) async {
+  // This sends an OTP either to the user (employee) or to the admin (for admin signups)
+  static Future<String?> sendOtp(String recipientEmail, String role) async {
     const serviceId = '';
-    const templateId = '';
-    const userId = ''; // public key from EmailJS
+    const employeeTemplateId = '';
+    const adminTemplateId = '';
+    const userId = ''; // EmailJS public key
+
     final otp = _generateOtp();
+    final templateId = role == 'admin' ? adminTemplateId : employeeTemplateId;
 
     final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+
+    final templateParams = {
+      'to_email': role == 'admin'
+          ? '' // email of the main admin reviewer
+          : recipientEmail, // send to employee if role is employee
+      'otp': otp,
+      'user_email': recipientEmail, // include in message for admin approval
+    };
 
     final response = await http.post(
       url,
@@ -20,10 +32,7 @@ class OtpService {
         'service_id': serviceId,
         'template_id': templateId,
         'user_id': userId,
-        'template_params': {
-          'to_email': email,
-          'otp': otp,
-        },
+        'template_params': templateParams,
       }),
     );
 
