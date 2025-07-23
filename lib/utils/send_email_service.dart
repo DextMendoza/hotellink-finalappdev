@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class EmailService {
-  static const _serviceId = 'service_kces6fg';
-  static const _templateId = 'template_zh5zolj';
-  static const _userId = 'DjKZ32hhsQEjPrI3h'; // EmailJS public key
+  static const _serviceId = '';
+  static const _templateId = '';
+  static const _userId = ''; // EmailJS public key
 
   static Future<void> sendVerificationEmail({
     required String name,
@@ -25,7 +25,7 @@ class EmailService {
         'template_params': {
           'from_name': name,
           'from_email': email,
-          'to_email': 'dxdtm16@gmail.com', // set this to owner's email
+          'to_email': '', // set this to owner's email
         }
       }),
     );
