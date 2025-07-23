@@ -1,4 +1,3 @@
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:final_project_in_appdev/models/employee.dart';
 
@@ -44,20 +43,20 @@ class EmployeeStorage {
     await saveEmployees(employees);
   }
 
-  /// Update an existing employee by ID
+  /// Update an existing employee by employeeId
   static Future<void> updateEmployee(Employee updated) async {
     final employees = await loadEmployees();
-    final index = employees.indexWhere((e) => e.id == updated.id);
+    final index = employees.indexWhere((e) => e.employeeId == updated.employeeId);
     if (index != -1) {
       employees[index] = updated;
       await saveEmployees(employees);
     }
   }
 
-  /// Delete employee by ID
-  static Future<void> deleteEmployee(String id) async {
+  /// Delete employee by employeeId
+  static Future<void> deleteEmployee(String employeeId) async {
     final employees = await loadEmployees();
-    employees.removeWhere((e) => e.id == id);
+    employees.removeWhere((e) => e.employeeId == employeeId);
     await saveEmployees(employees);
   }
 }
