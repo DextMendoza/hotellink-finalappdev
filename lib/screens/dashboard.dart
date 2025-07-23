@@ -7,7 +7,9 @@ import 'package:final_project_in_appdev/screens/profile_page.dart';
 import 'package:final_project_in_appdev/screens/login_screen.dart';
 import 'package:final_project_in_appdev/utils/constants.dart';
 import 'dart:async';
-
+import 'package:final_project_in_appdev/models/attendance_record.dart';
+import 'package:final_project_in_appdev/utils/attendance_storage.dart';
+import 'package:final_project_in_appdev/utils/payroll_service.dart';
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
 
@@ -79,11 +81,13 @@ class _DashboardState extends State<Dashboard> {
                   _AnimatedTile(
                     icon: Icons.receipt_long,
                     label: 'Payroll Management',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const PayrollReport()),
-                    ),
-                  ),
+                    onTap: () {
+                    Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PayrollReport()),
+                   );
+                 },
+                ),
                   _DateTimeTile(), // New date/time tile
                 ],
               );
@@ -95,7 +99,7 @@ class _DashboardState extends State<Dashboard> {
   }
 }
 
-//Tile that displays current date and time, updates in real time
+// Animated tile for dashboard grid
 class _DateTimeTile extends StatefulWidget {
   const _DateTimeTile({Key? key}) : super(key: key);
 
@@ -138,11 +142,11 @@ class _DateTimeTileState extends State<_DateTimeTile> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        color: const Color.fromARGB(207, 255, 255, 255),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: const Color.fromARGB(54, 0, 0, 0),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -230,11 +234,11 @@ class _AnimatedTileState extends State<_AnimatedTile> with SingleTickerProviderS
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
+            color: const Color.fromARGB(221, 255, 255, 255),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: const Color.fromARGB(57, 0, 0, 0),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -327,15 +331,15 @@ class NavigationDrawer extends StatelessWidget {
                 ),
                 _AnimatedDrawerTile(
                   icon: Icons.receipt_long,
-                  label: 'Payroll Report',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const PayrollReport()),
-                    );
-                  },
-                ),
+                    label: 'Payroll Management',
+                      onTap: () {
+                      Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                           MaterialPageRoute(builder: (context) => const PayrollReport()),
+                      );
+                    },
+                  ),
                 _AnimatedDrawerTile(
                   icon: Icons.logout,
                   label: 'Logout',
