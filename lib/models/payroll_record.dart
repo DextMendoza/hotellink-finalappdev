@@ -1,35 +1,31 @@
-// Model class representing a payroll record for an employee.
 class PayrollRecord {
-  String id;
   String employeeId;
-  String month;
-  double salary;
+  double hoursWorked;
+  double totalSalary;
+  DateTime dateGenerated;
 
-  // Constructor for creating a PayrollRecord instance.
   PayrollRecord({
-    required this.id,
     required this.employeeId,
-    required this.month,
-    required this.salary,
+    required this.hoursWorked,
+    required this.totalSalary,
+    required this.dateGenerated,
   });
 
-  // Converts the PayrollRecord object to a JSON-compatible map.
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'employeeId': employeeId,
-      'month': month,
-      'salary': salary,
+      'hoursWorked': hoursWorked,
+      'totalSalary': totalSalary,
+      'dateGenerated': dateGenerated.toIso8601String(),
     };
   }
 
-  // Factory constructor to create a PayrollRecord from a JSON map.
   factory PayrollRecord.fromJson(Map<String, dynamic> json) {
     return PayrollRecord(
-      id: json['id'],
       employeeId: json['employeeId'],
-      month: json['month'],
-      salary: (json['salary'] as num).toDouble(),
+      hoursWorked: (json['hoursWorked'] as num).toDouble(),
+      totalSalary: (json['totalSalary'] as num).toDouble(),
+      dateGenerated: DateTime.parse(json['dateGenerated']),
     );
   }
 }
