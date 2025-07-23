@@ -7,19 +7,18 @@ import 'package:final_project_in_appdev/screens/employee_management.dart';
 import 'package:final_project_in_appdev/screens/attendance_manager.dart';
 import 'package:final_project_in_appdev/screens/payroll_management.dart';
 import 'package:final_project_in_appdev/screens/profile_page.dart';
+import 'package:final_project_in_appdev/screens/employee_home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
-// Main app widget
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Set up MaterialApp with routes and theme
     return MaterialApp(
       title: 'HotelLink Mobile App',
       theme: ThemeData(
@@ -33,15 +32,15 @@ class MyApp extends StatelessWidget {
         '/dashboard': (context) => const Dashboard(),
         '/employee-management': (context) => const EmployeeManagement(),
         '/attendance-manager': (context) => const AttendanceManager(),
-        '/payroll-report': (context) => const PayrollReport(),
+        '/payroll-management': (context) => const PayrollReport(),
         '/profile': (context) => const ProfilePage(),
         '/employee-screen': (context) => EmployeeScreen(employees: []),
+        '/employee-home': (context) => const EmployeeHomeScreen(),
       },
     );
   }
 }
 
-// Splash screen shown at app start
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -53,7 +52,6 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Wait 3 seconds then go to login screen
     Future.delayed(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
@@ -64,7 +62,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Simple splash UI with app name and loading spinner
     return Scaffold(
       body: Center(
         child: Column(
