@@ -260,21 +260,6 @@ class _PayrollReportState extends State<PayrollReport> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ViewPayrollScreen(
-                    payrollRecords: _payrollRecords,
-                    isEmployee: false,
-                  ),
-                ),
-              );
-            },
-            child: const Text('View Report'),
-          ),
         ],
       ),
     );
@@ -285,55 +270,76 @@ class _PayrollReportState extends State<PayrollReport> {
       return const Center(child: Text('No payroll records found.'));
     }
 
-    return ListView.builder(
-      itemCount: records.length,
-      itemBuilder: (context, index) {
-        final record = records[index];
-        return Card(
-          color: Colors.white,
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          child: ListTile(
-            title: Text('Employee ID: ${record.employeeId}'),
-            subtitle: Text(
-              'Hours: ${record.hoursWorked.toStringAsFixed(2)}\n'
-              'Salary: ₱${record.totalSalary.toStringAsFixed(2)}\n'
-              'Date: ${DateFormat.yMMMd().format(record.dateGenerated)}',
-            ),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Delete Payroll Record'),
-                    content: const Text(
-                      'Are you sure you want to delete this payroll record? This action cannot be undone.',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text(
-                          'Delete',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                    ],
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            itemCount: records.length,
+            itemBuilder: (context, index) {
+              final record = records[index];
+              return Card(
+                color: Colors.white,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: ListTile(
+                  title: Text('Employee ID: ${record.employeeId}'),
+                  subtitle: Text(
+                    'Hours: ${record.hoursWorked.toStringAsFixed(2)}\n'
+                    'Salary: ₱${record.totalSalary.toStringAsFixed(2)}\n'
+                    'Date: ${DateFormat.yMMMd().format(record.dateGenerated)}',
                   ),
-                );
-                if (confirm == true) {
-                  setState(() => records.removeAt(index));
-                  PayrollStorage.saveRecords(records);
-                  _showSnackBar('Payroll record deleted.');
-                }
-              },
-            ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Delete Payroll Record'),
+                          content: const Text(
+                            'Are you sure you want to delete this payroll record? This action cannot be undone.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text(
+                                'Delete',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        setState(() => records.removeAt(index));
+                        PayrollStorage.saveRecords(records);
+                        _showSnackBar('Payroll record deleted.');
+                      }
+                    },
+                  ),
+                ),
+              );
+            },
           ),
-        );
-      },
+        ),
+        const SizedBox(height: 10),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ViewPayrollScreen(
+                  payrollRecords: _payrollRecords,
+                  isEmployee: false,
+                ),
+              ),
+            );
+          },
+          child: const Text('View All'),
+        ),
+      ],
     );
   }
 }
