@@ -90,7 +90,10 @@ class _PayrollReportState extends State<PayrollReport> {
 
     final empId = _employeeIdController.text.trim();
     if (_payrollRecords.any((r) => r.employeeId == empId)) {
-      _showSnackBar('Payroll for this Employee ID already exists!', isError: true);
+      _showSnackBar(
+        'Payroll for this Employee ID already exists!',
+        isError: true,
+      );
       return;
     }
 
@@ -104,7 +107,10 @@ class _PayrollReportState extends State<PayrollReport> {
       });
       PayrollStorage.saveRecords(_payrollRecords);
     } else {
-      _showSnackBar('No attendance data found for this employee.', isError: true);
+      _showSnackBar(
+        'No attendance data found for this employee.',
+        isError: true,
+      );
     }
   }
 
@@ -158,7 +164,10 @@ class _PayrollReportState extends State<PayrollReport> {
 
   void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: isError ? Colors.red : null),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : null,
+      ),
     );
   }
 
@@ -224,7 +233,9 @@ class _PayrollReportState extends State<PayrollReport> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: _refreshPayroll,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                  ),
                   child: const Text('Refresh Payroll'),
                 ),
               ),
@@ -236,7 +247,9 @@ class _PayrollReportState extends State<PayrollReport> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: _exportToXmlFile,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
                   child: const Text('Export to XML'),
                 ),
               ),
@@ -288,6 +301,38 @@ class _PayrollReportState extends State<PayrollReport> {
               'Hours: ${record.hoursWorked.toStringAsFixed(2)}\n'
               'Salary: ₱${record.totalSalary.toStringAsFixed(2)}\n'
               'Date: ${DateFormat.yMMMd().format(record.dateGenerated)}',
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Delete Payroll Record'),
+                    content: const Text(
+                      'Are you sure you want to delete this payroll record? This action cannot be undone.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text(
+                          'Delete',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  setState(() => records.removeAt(index));
+                  PayrollStorage.saveRecords(records);
+                  _showSnackBar('Payroll record deleted.');
+                }
+              },
             ),
           ),
         );
