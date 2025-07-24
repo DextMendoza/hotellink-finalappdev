@@ -37,4 +37,58 @@ class Constants {
       Color.fromARGB(255, 49, 118, 150),
     ],
   );
+
+  // Light Theme
+  static final ThemeData lightTheme = ThemeData(
+    brightness: Brightness.light,
+    primaryColor: primaryColor,
+    scaffoldBackgroundColor: backgroundColor,
+    fontFamily: fontFamily,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: primaryColor,
+      foregroundColor: Colors.white,
+      elevation: 0,
+    ),
+    colorScheme: ColorScheme.light(
+      primary: primaryColor,
+      secondary: secondaryColor,
+      background: backgroundColor,
+      onBackground: textColor,
+    ),
+    textTheme: const TextTheme(
+      titleLarge: TextStyle(
+        fontSize: fontSizeTitle,
+        color: textColor,
+        fontWeight: FontWeight.bold,
+      ),
+      bodyMedium: TextStyle(fontSize: fontSizeSubtitle, color: textColor),
+    ),
+  );
+
+  // Dark Theme
+  static final ThemeData darkTheme = ThemeData(
+    brightness: Brightness.dark,
+    primaryColor: Colors.blueGrey,
+    scaffoldBackgroundColor: Colors.black,
+    fontFamily: fontFamily,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.blueGrey,
+      foregroundColor: Colors.white,
+      elevation: 0,
+    ),
+    colorScheme: ColorScheme.dark(
+      primary: Colors.blueGrey,
+      secondary: Colors.tealAccent,
+      background: Colors.black,
+      onBackground: Colors.white,
+    ),
+    textTheme: const TextTheme(
+      titleLarge: TextStyle(
+        fontSize: fontSizeTitle,
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+      ),
+      bodyMedium: TextStyle(fontSize: fontSizeSubtitle, color: Colors.white),
+    ),
+  );
 }
