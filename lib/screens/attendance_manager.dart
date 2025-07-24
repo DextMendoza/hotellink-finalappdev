@@ -62,16 +62,20 @@ class _AttendanceManagerState extends State<AttendanceManager> {
         ? _userEmail ?? 'unknown'
         : _employeeIdController.text.trim();
 
-    final alreadyExists = _records.any((r) =>
-        r.employeeId == employeeId &&
-        r.date.year == _selectedDate.year &&
-        r.date.month == _selectedDate.month &&
-        r.date.day == _selectedDate.day);
+    final alreadyExists = _records.any(
+      (r) =>
+          r.employeeId == employeeId &&
+          r.date.year == _selectedDate.year &&
+          r.date.month == _selectedDate.month &&
+          r.date.day == _selectedDate.day,
+    );
 
     if (alreadyExists) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Attendance already recorded for this employee and date.'),
+          content: Text(
+            'Attendance already recorded for this employee and date.',
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -110,10 +114,18 @@ class _AttendanceManagerState extends State<AttendanceManager> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete All Attendance?'),
-        content: const Text('This will permanently delete all attendance records. Continue?'),
+        content: const Text(
+          'This will permanently delete all attendance records. Continue?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Delete')),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete'),
+          ),
         ],
       ),
     );
@@ -172,7 +184,11 @@ class _AttendanceManagerState extends State<AttendanceManager> {
     }
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, {IconData? icon}) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, {
+    IconData? icon,
+  }) {
     return TextFormField(
       controller: controller,
       readOnly: icon != null,
@@ -240,7 +256,9 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                         Row(
                           children: [
                             Expanded(
-                              child: Text('Date: ${_selectedDate.toLocal().toString().split(' ')[0]}'),
+                              child: Text(
+                                'Date: ${_selectedDate.toLocal().toString().split(' ')[0]}',
+                              ),
                             ),
                             TextButton(
                               onPressed: _pickDate,
@@ -253,8 +271,14 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                         DropdownButtonFormField<String>(
                           value: _status,
                           items: const [
-                            DropdownMenuItem(value: 'Present', child: Text('Present')),
-                            DropdownMenuItem(value: 'Absent', child: Text('Absent')),
+                            DropdownMenuItem(
+                              value: 'Present',
+                              child: Text('Present'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Absent',
+                              child: Text('Absent'),
+                            ),
                           ],
                           onChanged: (val) => setState(() => _status = val!),
                           decoration: const InputDecoration(
@@ -274,32 +298,84 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                   const SizedBox(height: 20),
 
                   Expanded(
-                    child: _records.isEmpty
-                        ? const Text('No attendance records found.')
-                        : ListView.builder(
-                            itemCount: _records.length,
-                            itemBuilder: (context, index) {
-                              final r = _records[index];
-                              final dateStr = r.date.toLocal().toString().split(' ')[0];
-                              return ListTile(
-                                title: Text('ID: ${r.employeeId}'),
-                                subtitle: Text('Date: $dateStr | Status: ${r.status}\nIn: ${r.timeIn} - Out: ${r.timeOut}'),
-                              );
-                            },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey[600]!, width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
                           ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      child: _records.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'No attendance records found.',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: _records.length,
+                              itemBuilder: (context, index) {
+                                final r = _records[index];
+                                final dateStr = r.date
+                                    .toLocal()
+                                    .toString()
+                                    .split(' ')[0];
+                                return Card(
+                                  elevation: 2,
+                                  margin: const EdgeInsets.symmetric(
+                                    vertical: 6,
+                                    horizontal: 2,
+                                  ),
+                                  color: Colors.white,
+                                  child: ListTile(
+                                    leading: const Icon(
+                                      Icons.person,
+                                      color: Colors.blueGrey,
+                                    ),
+                                    title: Text(
+                                      'ID: ${r.employeeId}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      'Date: $dateStr | Status: ${r.status}\nIn: ${r.timeIn} - Out: ${r.timeOut}',
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
                   ),
                   const SizedBox(height: 10),
 
                   if (!isEmployee)
                     ElevatedButton(
                       onPressed: _clearFormFields,
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                      ),
                       child: const Text('Clear Form'),
                     ),
                   ElevatedButton(
                     onPressed: _deleteAllAttendance,
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                    child: Text(isEmployee ? 'Delete My Records' : 'Delete All Records'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    child: Text(
+                      isEmployee ? 'Delete My Records' : 'Delete All Records',
+                    ),
                   ),
                 ],
               ),
