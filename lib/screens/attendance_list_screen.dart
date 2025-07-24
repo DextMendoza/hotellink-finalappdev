@@ -18,7 +18,7 @@ class AttendanceListScreen extends StatelessWidget {
             onPressed: () {
               Navigator.pop(context, 'clear');
             },
-          )
+          ),
         ],
       ),
       body: Container(
@@ -33,13 +33,18 @@ class AttendanceListScreen extends StatelessWidget {
               )
             : ListView.separated(
                 itemCount: records.length,
-                separatorBuilder: (context, index) => const Divider(color: Colors.white30),
+                separatorBuilder: (context, index) =>
+                    const Divider(color: Colors.white30),
                 itemBuilder: (context, index) {
                   final record = records[index];
-                  final dateString = record.date.toLocal().toString().split(' ')[0];
+                  final dateString = record.date.toLocal().toString().split(
+                    ' ',
+                  )[0];
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: record.status == 'Present' ? Colors.green : Colors.red,
+                      backgroundColor: record.status == 'Present'
+                          ? Colors.green
+                          : Colors.red,
                       child: Icon(
                         record.status == 'Present' ? Icons.check : Icons.close,
                         color: Colors.white,
