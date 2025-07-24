@@ -17,7 +17,8 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
   final _employeeIdController = TextEditingController();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _positionController = TextEditingController(); // Used to store dropdown value
+  final _positionController =
+      TextEditingController(); // Used to store dropdown value
 
   List<Employee> _employees = [];
   int? _editingIndex;
@@ -86,13 +87,13 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
     try {
       final path = await XmlHelper.exportEmployeesToXml(_employees);
       setState(() => _lastExportPath = path);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Exported to XML: $path')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Exported to XML: $path')));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Export failed: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Export failed: $e')));
     }
   }
 
@@ -177,10 +178,7 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                         border: OutlineInputBorder(),
                       ),
                       items: const [
-                        DropdownMenuItem(
-                          value: 'Admin',
-                          child: Text('Admin'),
-                        ),
+                        DropdownMenuItem(value: 'Admin', child: Text('Admin')),
                         DropdownMenuItem(
                           value: 'Employee',
                           child: Text('Employee'),
@@ -191,8 +189,9 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                           _positionController.text = value!;
                         });
                       },
-                      validator: (value) =>
-                          value == null || value.isEmpty ? 'Please select a position' : null,
+                      validator: (value) => value == null || value.isEmpty
+                          ? 'Please select a position'
+                          : null,
                     ),
                     const SizedBox(height: 10),
                     Row(
@@ -200,9 +199,11 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: _saveEmployee,
-                            child: Text(_editingIndex == null
-                                ? 'Add Employee'
-                                : 'Update Employee'),
+                            child: Text(
+                              _editingIndex == null
+                                  ? 'Add Employee'
+                                  : 'Update Employee',
+                            ),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -235,7 +236,9 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                   return Card(
                     child: ListTile(
                       title: Text(emp.name),
-                      subtitle: Text('ID: ${emp.employeeId} | Email: ${emp.email}'),
+                      subtitle: Text(
+                        'ID: ${emp.employeeId} | Email: ${emp.email}',
+                      ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -248,29 +251,35 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
                             onPressed: () async {
-  final confirm = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Confirm Deletion'),
-      content: const Text('Are you sure you want to delete this employee?'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text('Delete', style: TextStyle(color: Colors.red)),
-        ),
-      ],
-    ),
-  );
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('Confirm Deletion'),
+                                  content: const Text(
+                                    'Are you sure you want to delete this employee?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      child: const Text(
+                                        'Delete',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
 
-  if (confirm == true) {
-    _deleteEmployee(index);
-  }
-},
-
+                              if (confirm == true) {
+                                _deleteEmployee(index);
+                              }
+                            },
                           ),
                         ],
                       ),
