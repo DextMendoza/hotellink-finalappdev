@@ -10,6 +10,8 @@ import 'dart:async';
 import 'package:final_project_in_appdev/models/attendance_record.dart';
 import 'package:final_project_in_appdev/utils/attendance_storage.dart';
 import 'package:final_project_in_appdev/utils/payroll_service.dart';
+import 'dart:ui';
+
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
 
@@ -24,76 +26,100 @@ class _DashboardState extends State<Dashboard> {
     return Container(
       decoration: const BoxDecoration(
         gradient: Constants.backgroundGradient,
+        image: DecorationImage(
+          image: AssetImage('assets/images/dashboard_bg.png'),
+          fit: BoxFit.cover,
+        ),
       ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text('Dashboard'),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          actions: [
-            // Profile button in the app bar
-            IconButton(
-              icon: const Icon(Icons.person),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfilePage(),
-                  ),
-                );
-              },
+      child: Stack(
+        children: [
+          // Add blur effect over the background image
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: 8,
+                sigmaY: 8,
+              ), // Adjust blur strength as needed
+              child: Container(color: Colors.transparent),
             ),
-          ],
-        ),
-        drawer: const NavigationDrawer(),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth > 600;
-              final crossAxisCount = isWide ? 3 : 2;
-
-              // Dashboard grid menu
-              return GridView.count(
-                crossAxisCount: crossAxisCount,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1,
-                shrinkWrap: true,
-                children: [
-                  _AnimatedTile(
-                    icon: Icons.people,
-                    label: 'Employee Management',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const EmployeeManagement()),
-                    ),
-                  ),
-                  _AnimatedTile(
-                    icon: Icons.note,
-                    label: 'Attendance Manager',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AttendanceManager()),
-                    ),
-                  ),
-                  _AnimatedTile(
-                    icon: Icons.receipt_long,
-                    label: 'Payroll Management',
-                    onTap: () {
-                    Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const PayrollReport()),
-                   );
-                 },
-                ),
-                  _DateTimeTile(), // New date/time tile
-                ],
-              );
-            },
           ),
-        ),
+          Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              title: const Text('Dashboard'),
+              backgroundColor: Colors.white,
+              elevation: 0,
+              iconTheme: const IconThemeData(color: Colors.black),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.person),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ProfilePage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            drawer: const NavigationDrawer(),
+            body: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth > 600;
+                  final crossAxisCount = isWide ? 3 : 2;
+
+                  // Dashboard grid menu
+                  return GridView.count(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 1,
+                    shrinkWrap: true,
+                    children: [
+                      _AnimatedTile(
+                        icon: Icons.people,
+                        label: 'Employee Management',
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const EmployeeManagement(),
+                          ),
+                        ),
+                      ),
+                      _AnimatedTile(
+                        icon: Icons.note,
+                        label: 'Attendance Manager',
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AttendanceManager(),
+                          ),
+                        ),
+                      ),
+                      _AnimatedTile(
+                        icon: Icons.receipt_long,
+                        label: 'Payroll Management',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PayrollReport(),
+                            ),
+                          );
+                        },
+                      ),
+                      _DateTimeTile(), // New date/time tile
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -137,7 +163,6 @@ class _DateTimeTileState extends State<_DateTimeTile> {
   }
 
   @override
-  
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -155,7 +180,11 @@ class _DateTimeTileState extends State<_DateTimeTile> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.access_time, size: 48, color: Constants.primaryColor),
+          const Icon(
+            Icons.access_time,
+            size: 48,
+            color: Constants.primaryColor,
+          ),
           const SizedBox(height: 12),
           Text(
             _currentTime,
@@ -168,10 +197,7 @@ class _DateTimeTileState extends State<_DateTimeTile> {
           const SizedBox(height: 8),
           Text(
             _currentDate,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Constants.textColor,
-            ),
+            style: const TextStyle(fontSize: 16, color: Constants.textColor),
           ),
         ],
       ),
@@ -194,7 +220,8 @@ class _AnimatedTile extends StatefulWidget {
   State<_AnimatedTile> createState() => _AnimatedTileState();
 }
 
-class _AnimatedTileState extends State<_AnimatedTile> with SingleTickerProviderStateMixin {
+class _AnimatedTileState extends State<_AnimatedTile>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -273,7 +300,7 @@ class NavigationDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     // Drawer with navigation options
+    // Drawer with navigation options
     return Drawer(
       child: Column(
         children: [
@@ -314,7 +341,9 @@ class NavigationDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const EmployeeManagement()),
+                      MaterialPageRoute(
+                        builder: (context) => const EmployeeManagement(),
+                      ),
                     );
                   },
                 ),
@@ -325,21 +354,25 @@ class NavigationDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const AttendanceManager()),
+                      MaterialPageRoute(
+                        builder: (context) => const AttendanceManager(),
+                      ),
                     );
                   },
                 ),
                 _AnimatedDrawerTile(
                   icon: Icons.receipt_long,
-                    label: 'Payroll Management',
-                      onTap: () {
-                      Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                           MaterialPageRoute(builder: (context) => const PayrollReport()),
-                      );
-                    },
-                  ),
+                  label: 'Payroll Management',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PayrollReport(),
+                      ),
+                    );
+                  },
+                ),
                 _AnimatedDrawerTile(
                   icon: Icons.logout,
                   label: 'Logout',
@@ -347,13 +380,15 @@ class NavigationDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
                     );
                   },
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -376,7 +411,8 @@ class _AnimatedDrawerTile extends StatefulWidget {
   State<_AnimatedDrawerTile> createState() => _AnimatedDrawerTileState();
 }
 
-class _AnimatedDrawerTileState extends State<_AnimatedDrawerTile> with SingleTickerProviderStateMixin {
+class _AnimatedDrawerTileState extends State<_AnimatedDrawerTile>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
@@ -413,7 +449,7 @@ class _AnimatedDrawerTileState extends State<_AnimatedDrawerTile> with SingleTic
           leading: Icon(widget.icon, color: Constants.primaryColor),
           title: Text(widget.label),
           onTap: widget.onTap,
-        ),  
+        ),
       ),
     );
   }
