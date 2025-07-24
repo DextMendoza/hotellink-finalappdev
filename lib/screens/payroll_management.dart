@@ -191,6 +191,13 @@ class _PayrollReportState extends State<PayrollReport> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download),
+            tooltip: 'Export to XML',
+            onPressed: _exportToXmlFile,
+          ),
+        ],
       ),
       body: Container(
         padding: const EdgeInsets.all(20),
@@ -244,16 +251,6 @@ class _PayrollReportState extends State<PayrollReport> {
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _exportToXmlFile,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                  ),
-                  child: const Text('Export to XML'),
-                ),
-              ),
-              const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
                   onPressed: _clearRecords,
