@@ -23,8 +23,12 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
     final record = widget.payrollRecords[index];
 
     final employeeIdController = TextEditingController(text: record.employeeId);
-    final hoursWorkedController = TextEditingController(text: record.hoursWorked.toString());
-    final totalSalaryController = TextEditingController(text: record.totalSalary.toString());
+    final hoursWorkedController = TextEditingController(
+      text: record.hoursWorked.toString(),
+    );
+    final totalSalaryController = TextEditingController(
+      text: record.totalSalary.toString(),
+    );
 
     showDialog(
       context: context,
@@ -59,8 +63,12 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
               setState(() {
                 widget.payrollRecords[index] = PayrollRecord(
                   employeeId: employeeIdController.text,
-                  hoursWorked: double.tryParse(hoursWorkedController.text) ?? record.hoursWorked,
-                  totalSalary: double.tryParse(totalSalaryController.text) ?? record.totalSalary,
+                  hoursWorked:
+                      double.tryParse(hoursWorkedController.text) ??
+                      record.hoursWorked,
+                  totalSalary:
+                      double.tryParse(totalSalaryController.text) ??
+                      record.totalSalary,
                   dateGenerated: record.dateGenerated,
                 );
               });
@@ -86,7 +94,7 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Payroll Report View'),
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       ),
       body: Container(
         decoration: const BoxDecoration(gradient: Constants.backgroundGradient),
@@ -99,11 +107,16 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
                   final record = widget.payrollRecords[index];
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 8.0),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: ListTile(
                       title: Text(
                         'Employee ID: ${record.employeeId}',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                       subtitle: Text(
                         'Hours Worked: ${record.hoursWorked.toStringAsFixed(2)}\n'
@@ -120,7 +133,10 @@ class _ViewPayrollScreenState extends State<ViewPayrollScreen> {
                                   onPressed: () => _editRecord(context, index),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
                                   onPressed: () => _deleteRecord(index),
                                 ),
                               ],
