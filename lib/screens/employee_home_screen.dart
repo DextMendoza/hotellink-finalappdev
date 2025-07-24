@@ -4,6 +4,7 @@ import 'package:final_project_in_appdev/screens/payroll_screen.dart';
 import 'package:final_project_in_appdev/utils/payroll_storage.dart';
 import 'package:final_project_in_appdev/models/payroll_record.dart';
 import 'package:final_project_in_appdev/screens/profile_page.dart';
+import 'dart:ui'; // Add this import for ImageFilter
 
 class EmployeeHomeScreen extends StatelessWidget {
   const EmployeeHomeScreen({super.key});
@@ -14,56 +15,78 @@ class EmployeeHomeScreen extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ViewPayrollScreen(
-          payrollRecords: allRecords,
-          isEmployee: true,
-        ),
+        builder: (_) =>
+            ViewPayrollScreen(payrollRecords: allRecords, isEmployee: true),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Employee Dashboard'),
-        backgroundColor: Colors.blue,
-        actions: [
-            // Profile button in the app bar
-            IconButton(
-              icon: const Icon(Icons.person),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfilePage(),
-                  ),
-                );
-              },
-            ),
-          ],
-        automaticallyImplyLeading: false,
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/emp_bg.png'),
+          fit: BoxFit.cover,
+        ),
       ),
-      body: GridView.count(
-        crossAxisCount: 2,
-        padding: const EdgeInsets.all(20),
-        crossAxisSpacing: 20,
-        mainAxisSpacing: 20,
+      child: Stack(
         children: [
-          _TileButton(
-            icon: Icons.access_time,
-            label: 'Log Attendance',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AttendanceManager()),
-              );
-            },
+          // Add blur effect over the background image
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: 8,
+                sigmaY: 8,
+              ), // Adjust blur strength as needed
+              child: Container(color: Colors.transparent),
+            ),
           ),
-          _TileButton(
-            icon: Icons.receipt_long,
-            label: 'View Payroll',
-            onTap: () => _openPayroll(context),
+          Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              title: const Text('Employee Dashboard'),
+              backgroundColor: Colors.blue,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.person),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ProfilePage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+              automaticallyImplyLeading: false,
+            ),
+            body: GridView.count(
+              crossAxisCount: 2,
+              padding: const EdgeInsets.all(20),
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 20,
+              children: [
+                _TileButton(
+                  icon: Icons.access_time,
+                  label: 'Log Attendance',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AttendanceManager(),
+                      ),
+                    );
+                  },
+                ),
+                _TileButton(
+                  icon: Icons.receipt_long,
+                  label: 'View Payroll',
+                  onTap: () => _openPayroll(context),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -108,10 +131,7 @@ class _TileButton extends StatelessWidget {
             Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ],
         ),
