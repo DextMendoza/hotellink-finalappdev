@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:final_project_in_appdev/models/attendance_record.dart';
 import 'package:final_project_in_appdev/utils/attendance_storage.dart';
+import 'package:final_project_in_appdev/utils/constants.dart';
 
 class AttendanceManager extends StatefulWidget {
   const AttendanceManager({super.key});
@@ -213,105 +214,99 @@ class _AttendanceManagerState extends State<AttendanceManager> {
   Widget build(BuildContext context) {
     final isEmployee = _role == 'employee';
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Attendance Manager')),
-      body: _role == null
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        if (!isEmployee)
-                          _buildTextField(_employeeIdController, 'Employee ID'),
-                        const SizedBox(height: 10),
-
-                        GestureDetector(
-                          onTap: () => _pickTime(isTimeIn: true),
-                          child: AbsorbPointer(
-                            child: _buildTextField(
-                              _timeInController,
-                              'Select Time In',
-                              icon: Icons.access_time,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-
-                        GestureDetector(
-                          onTap: () => _pickTime(isTimeIn: false),
-                          child: AbsorbPointer(
-                            child: _buildTextField(
-                              _timeOutController,
-                              'Select Time Out',
-                              icon: Icons.access_time,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-
-                        Row(
+    return Container(
+      decoration: const BoxDecoration(gradient: Constants.backgroundGradient),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(title: const Text('Attendance Manager')),
+        body: _role == null
+            ? const Center(child: CircularProgressIndicator())
+            : Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white70,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
                           children: [
-                            Expanded(
-                              child: Text(
-                                'Date: ${_selectedDate.toLocal().toString().split(' ')[0]}',
+                            if (!isEmployee)
+                              _buildTextField(
+                                _employeeIdController,
+                                'Employee ID',
+                              ),
+                            const SizedBox(height: 10),
+                            GestureDetector(
+                              onTap: () => _pickTime(isTimeIn: true),
+                              child: AbsorbPointer(
+                                child: _buildTextField(
+                                  _timeInController,
+                                  'Select Time In',
+                                  icon: Icons.access_time,
+                                ),
                               ),
                             ),
-                            TextButton(
-                              onPressed: _pickDate,
-                              child: const Text('Pick Date'),
+                            const SizedBox(height: 10),
+                            GestureDetector(
+                              onTap: () => _pickTime(isTimeIn: false),
+                              child: AbsorbPointer(
+                                child: _buildTextField(
+                                  _timeOutController,
+                                  'Select Time Out',
+                                  icon: Icons.access_time,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Date: ${_selectedDate.toLocal().toString().split(' ')[0]}',
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: _pickDate,
+                                  child: const Text('Pick Date'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            DropdownButtonFormField<String>(
+                              value: _status,
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'Present',
+                                  child: Text('Present'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'Absent',
+                                  child: Text('Absent'),
+                                ),
+                              ],
+                              onChanged: (val) =>
+                                  setState(() => _status = val!),
+                              decoration: const InputDecoration(
+                                labelText: 'Status',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              onPressed: _addAttendance,
+                              child: const Text('Add Attendance'),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 10),
-
-                        DropdownButtonFormField<String>(
-                          value: _status,
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'Present',
-                              child: Text('Present'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'Absent',
-                              child: Text('Absent'),
-                            ),
-                          ],
-                          onChanged: (val) => setState(() => _status = val!),
-                          decoration: const InputDecoration(
-                            labelText: 'Status',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-
-                        ElevatedButton(
-                          onPressed: _addAttendance,
-                          child: const Text('Add Attendance'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey[600]!, width: 2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
                       ),
-                      padding: const EdgeInsets.all(16),
+                    ),
+                    const SizedBox(height: 20),
+                    Expanded(
                       child: _records.isEmpty
                           ? const Center(
                               child: Text(
@@ -357,29 +352,60 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                               },
                             ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  if (!isEmployee)
-                    ElevatedButton(
-                      onPressed: _clearFormFields,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
+                    const SizedBox(height: 10),
+                    if (!isEmployee)
+                      ElevatedButton(
+                        onPressed: () async {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Clear Form?'),
+                              content: const Text(
+                                'This will reset all input fields. Continue?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  child: const Text(
+                                    'Clear',
+                                    style: TextStyle(color: Colors.orange),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed == true) {
+                            _clearFormFields();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                        ),
+                        child: const Text(
+                          'Clear Form',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
-                      child: const Text('Clear Form'),
+                    ElevatedButton(
+                      onPressed: _deleteAllAttendance,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      child: Text(
+                        isEmployee ? 'Delete My Records' : 'Delete All Records',
+                        style: const TextStyle(color: Colors.white),
+                      ),
                     ),
-                  ElevatedButton(
-                    onPressed: _deleteAllAttendance,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                    child: Text(
-                      isEmployee ? 'Delete My Records' : 'Delete All Records',
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }
