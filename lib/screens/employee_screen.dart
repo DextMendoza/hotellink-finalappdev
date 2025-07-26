@@ -2,13 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:final_project_in_appdev/models/employee.dart';
 import 'package:final_project_in_appdev/utils/constants.dart';
 
-class EmployeeScreen extends StatelessWidget {
+class EmployeeScreen extends StatefulWidget {
   final List<Employee> employees;
 
   const EmployeeScreen({super.key, required this.employees});
 
   @override
+  State<EmployeeScreen> createState() => _EmployeeScreenState();
+}
+
+class _EmployeeScreenState extends State<EmployeeScreen> {
+  String _searchQuery = '';
+
+  @override
   Widget build(BuildContext context) {
+    final filteredEmployees = _searchQuery.isEmpty
+        ? widget.employees
+        : widget.employees
+              .where(
+                (emp) => emp.employeeId.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ),
+              )
+              .toList();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('All Employees'),
@@ -21,10 +38,7 @@ class EmployeeScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: CircleAvatar(
                 backgroundColor: Colors.white,
-                child: Icon(
-                  Icons.home,
-                  color: Colors.black,
-                ), // Changed to black
+                child: Icon(Icons.home, color: Colors.black),
               ),
             ),
           ),
@@ -32,55 +46,78 @@ class EmployeeScreen extends StatelessWidget {
       ),
       body: Container(
         decoration: const BoxDecoration(gradient: Constants.backgroundGradient),
-        child: employees.isEmpty
-            ? const Center(
-                child: Text(
-                  'No employees added yet.',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Search by Employee ID',
+                  prefixIcon: Icon(Icons.search),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(),
                 ),
-              )
-            : ListView.builder(
-                itemCount: employees.length,
-                itemBuilder: (context, index) {
-                  final emp = employees[index];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.blueAccent,
-                          child: Text(
-                            emp.name[0].toUpperCase(),
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        title: Text(
-                          emp.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 6.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Employee ID: ${emp.employeeId}'),
-                              Text('Email: ${emp.email}'),
-                              Text('Position: ${emp.position}'),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
                 },
               ),
+            ),
+            Expanded(
+              child: filteredEmployees.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No employees added yet.',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: filteredEmployees.length,
+                      itemBuilder: (context, index) {
+                        final emp = filteredEmployees[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.blueAccent,
+                                child: Text(
+                                  emp.name[0].toUpperCase(),
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              title: Text(
+                                emp.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 6.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Employee ID: ${emp.employeeId}'),
+                                    Text('Email: ${emp.email}'),
+                                    Text('Position: ${emp.position}'),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
