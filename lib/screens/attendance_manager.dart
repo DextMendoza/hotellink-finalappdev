@@ -298,7 +298,35 @@ class _AttendanceManagerState extends State<AttendanceManager> {
                             ),
                             const SizedBox(height: 10),
                             ElevatedButton(
-                              onPressed: _addAttendance,
+                              onPressed: () async {
+                                final confirmed = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Add Attendance?'),
+                                    content: const Text(
+                                      'Are you sure you want to add this attendance record?',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(false),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(true),
+                                        child: const Text(
+                                          'Add',
+                                          style: TextStyle(color: Colors.green),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (confirmed == true) {
+                                  _addAttendance();
+                                }
+                              },
                               child: const Text('Add Attendance'),
                             ),
                           ],
