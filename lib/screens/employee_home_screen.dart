@@ -15,7 +15,7 @@ class EmployeeHomeScreen extends StatefulWidget {
 }
 
 class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
-  int _selectedIndex = 1; // Home is the middle tab
+  int _selectedIndex = 0; // Set default to Attendance or Payroll
 
   void _openPayroll(BuildContext context) async {
     List<PayrollRecord> allRecords = await PayrollStorage.loadRecords();
@@ -48,15 +48,15 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
         context,
         MaterialPageRoute(builder: (_) => const AttendanceManager()),
       );
-    } else if (index == 2) {
+    } else if (index == 1) {
       _openPayroll(context);
-    } else if (index == 3) {
+    } else if (index == 2) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const ProfilePage()),
       );
     }
-    // index 1 is Home, do nothing
+    // No Home tab
   }
 
   @override
@@ -120,10 +120,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
                 const BottomNavigationBarItem(
                   icon: Icon(Icons.list_alt),
                   label: 'Attendance',
-                ),
-                const BottomNavigationBarItem(
-                  icon: Icon(Icons.home, size: 32),
-                  label: 'Home',
                 ),
                 const BottomNavigationBarItem(
                   icon: Icon(Icons.receipt_long),
