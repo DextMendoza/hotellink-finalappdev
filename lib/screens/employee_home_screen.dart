@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:final_project_in_appdev/screens/attendance_manager.dart';
 import 'package:final_project_in_appdev/screens/payroll_screen.dart';
+import 'package:final_project_in_appdev/screens/attendance_list_screen.dart';
 import 'package:final_project_in_appdev/utils/payroll_storage.dart';
 import 'package:final_project_in_appdev/models/payroll_record.dart';
 import 'package:final_project_in_appdev/screens/profile_page.dart';
-import 'dart:ui'; // Add this import for ImageFilter
+import 'dart:ui';
 
-class EmployeeHomeScreen extends StatelessWidget {
+class EmployeeHomeScreen extends StatefulWidget {
   const EmployeeHomeScreen({super.key});
+
+  @override
+  State<EmployeeHomeScreen> createState() => _EmployeeHomeScreenState();
+}
+
+class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
+  int _selectedIndex = 1; // Home is the middle tab
 
   void _openPayroll(BuildContext context) async {
     List<PayrollRecord> allRecords = await PayrollStorage.loadRecords();
-
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -19,6 +26,37 @@ class EmployeeHomeScreen extends StatelessWidget {
             ViewPayrollScreen(payrollRecords: allRecords, isEmployee: true),
       ),
     );
+  }
+
+  void _openAttendanceList(BuildContext context) {
+    // Replace with actual attendance records if available
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AttendanceListScreen(records: const []),
+      ),
+    );
+  }
+
+  void _onBottomNavTap(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    if (index == 0) {
+      // Navigate to AttendanceManager for employees
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AttendanceManager()),
+      );
+    } else if (index == 2) {
+      _openPayroll(context);
+    } else if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ProfilePage()),
+      );
+    }
+    // index 1 is Home, do nothing
   }
 
   @override
@@ -35,10 +73,7 @@ class EmployeeHomeScreen extends StatelessWidget {
           // Add blur effect over the background image
           Positioned.fill(
             child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: 8,
-                sigmaY: 8,
-              ), // Adjust blur strength as needed
+              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
               child: Container(color: Colors.transparent),
             ),
           ),
@@ -47,19 +82,6 @@ class EmployeeHomeScreen extends StatelessWidget {
             appBar: AppBar(
               title: const Text('Employee Dashboard'),
               backgroundColor: Colors.blue,
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.person),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ProfilePage(),
-                      ),
-                    );
-                  },
-                ),
-              ],
               automaticallyImplyLeading: false,
             ),
             body: GridView.count(
@@ -84,6 +106,32 @@ class EmployeeHomeScreen extends StatelessWidget {
                   icon: Icons.receipt_long,
                   label: 'View Payroll',
                   onTap: () => _openPayroll(context),
+                ),
+              ],
+            ),
+            bottomNavigationBar: BottomNavigationBar(
+              backgroundColor: Colors.white,
+              selectedItemColor: Colors.blue,
+              unselectedItemColor: Colors.grey,
+              currentIndex: _selectedIndex,
+              onTap: _onBottomNavTap,
+              type: BottomNavigationBarType.fixed,
+              items: [
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.list_alt),
+                  label: 'Attendance',
+                ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.home, size: 32),
+                  label: 'Home',
+                ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.receipt_long),
+                  label: 'Payroll',
+                ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.person),
+                  label: 'Profile',
                 ),
               ],
             ),
